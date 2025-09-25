@@ -141,18 +141,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $result = $stmt->execute([$name, $email, $roleId, $isActive, $userId]);
 
             if ($result) {
-                // If the current user is editing their own profile, update session data
-                if ($userId == $_SESSION['user_id']) {
-                    $_SESSION['name'] = $name; // Update session name to reflect the change
+                    // If the current user is editing their own profile, update session data
+                    if ($userId == $_SESSION['user_id']) {
+                        $_SESSION['name'] = $name; // Update session name to reflect the change
+                    }
+                    
+                    // Log the user update
+                    $currentUserId = $_SESSION['user_id'];
+                    logAudit($currentUserId, 'user_update', 'Updated user ID ' . $userId . ' (' . $name . ')');
+                    
+                    setFlash('success', 'User updated successfully!');
+                    // Redirect to prevent resubmission on refresh
+                    header('Location: list.php');
+                    exit;
+                } else {
+                    $errors[] = 'Failed to update user.';
+                    // Log the failure
+                    $currentUserId = $_SESSION['user_id'];
+                    logAudit($currentUserId, 'user_update_failed', 'Failed to update user ID ' . $userId . ': Database error');
                 }
-                
-                setFlash('success', 'User updated successfully!');
-                // Redirect to prevent resubmission on refresh
-                header('Location: list.php');
-                exit;
-            } else {
-                $errors[] = 'Failed to update user.';
-            }
         } catch (PDOException $e) {
             $errors[] = 'Database error: ' . $e->getMessage();
         }

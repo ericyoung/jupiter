@@ -437,6 +437,108 @@ function getRelativePath($target) {
 }
 
 /**
+ * Log an action to the audit trail
+ * @param int $userId The ID of the user performing the action
+ * @param string $action The type of action performed
+ * @param string $description Optional description of the action
+ * @return bool True if the audit was logged successfully, false otherwise
+ */
+function logAudit($userId, $action, $description = '') {
+    global $pdo;
+    
+    try {
+        $stmt = $pdo->prepare("INSERT INTO audits (user_id, action, description, ip_address, user_agent) VALUES (?, ?, ?, ?, ?)");
+        
+        $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '';
+        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+        
+        $result = $stmt->execute([$userId, $action, $description, $ipAddress, $userAgent]);
+        
+        return $result;
+    } catch (PDOException $e) {
+        error_log("Audit logging failed: " . $e->getMessage());
+        return false;
+    }
+}
+
+/**
+ * Get audit logs for a specific user
+ * @param int $userId The ID of the user to get logs for
+ * @param int $limit Number of records to return (default 50)
+ * @param int $offset Number of records to skip (default 0)
+ * @param string $startDate Optional start date filter (format: YYYY-MM-DD)
+ * @param string $endDate Optional end date filter (format: YYYY-MM-DD)
+ * @return array Array of audit records
+ */
+function getUserAudits($userId, $limit = 50, $offset = 0, $startDate = '', $endDate = '') {
+    global $pdo;
+    
+    try {
+        // Build the query with optional date filtering
+        $whereClause = "a.user_id = ?";
+        $params = [$userId];
+        
+        if (!empty($startDate)) {
+            $whereClause .= " AND DATE(a.created_at) >= ?";
+            $params[] = $startDate;
+        }
+        if (!empty($endDate)) {
+            $whereClause .= " AND DATE(a.created_at) <= ?";
+            $params[] = $endDate;
+        }
+        
+        $query = "SELECT a.*, u.name as username FROM audits a LEFT JOIN users u ON a.user_id = u.id WHERE $whereClause ORDER BY a.created_at DESC LIMIT ? OFFSET ?";
+        $paramsWithLimit = array_merge($params, [$limit, $offset]);
+        
+        $stmt = $pdo->prepare($query);
+        $stmt->execute($paramsWithLimit);
+        
+        return $stmt->fetchAll();
+    } catch (PDOException $e) {
+        error_log("Audit retrieval failed: " . $e->getMessage());
+        return [];
+    }
+}
+
+/**
+ * Get all audit logs
+ * @param int $limit Number of records to return (default 50)
+ * @param int $offset Number of records to skip (default 0)
+ * @param string $startDate Optional start date filter (format: YYYY-MM-DD)
+ * @param string $endDate Optional end date filter (format: YYYY-MM-DD)
+ * @return array Array of audit records
+ */
+function getAllAudits($limit = 50, $offset = 0, $startDate = '', $endDate = '') {
+    global $pdo;
+    
+    try {
+        // Build the query with optional date filtering
+        $whereClause = "1=1";
+        $params = [];
+        
+        if (!empty($startDate)) {
+            $whereClause .= " AND DATE(a.created_at) >= ?";
+            $params[] = $startDate;
+        }
+        if (!empty($endDate)) {
+            $whereClause .= " AND DATE(a.created_at) <= ?";
+            $params[] = $endDate;
+        }
+        
+        $query = "SELECT a.*, u.name as username FROM audits a LEFT JOIN users u ON a.user_id = u.id WHERE $whereClause ORDER BY a.created_at DESC LIMIT ? OFFSET ?";
+        $paramsWithLimit = array_merge($params, [$limit, $offset]);
+        
+        $stmt = $pdo->prepare($query);
+        $stmt->execute($paramsWithLimit);
+        
+        return $stmt->fetchAll();
+    } catch (PDOException $e) {
+        error_log("Audit retrieval failed: " . $e->getMessage());
+        return [];
+    }
+}
+
+/**
  * Set a flash message
  * @param string $type Type of message (success, error, warning, info)
  * @param string $message The message content
@@ -554,7 +656,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'confirm') {
  */
 function generateBreadcrumbs($additionalCrumbs = []) {
     $currentPage = $_SERVER['REQUEST_URI'] ?? '';
-    
+
     // Don't show breadcrumbs on the main index page
     if (strpos($currentPage, '/index.php') !== false || empty($currentPage) || $currentPage === '/') {
         return '';
@@ -569,7 +671,7 @@ function generateBreadcrumbs($additionalCrumbs = []) {
         if (strpos($currentPage, '/admin/dashboard.php') !== false) {
             return '';
         }
-        
+
         // Always show Admin as the first breadcrumb for all admin pages except the dashboard
         $breadcrumbs[] = ['name' => 'Admin', 'url' => getRelativePath('admin/dashboard.php')];
 
@@ -601,18 +703,14 @@ function generateBreadcrumbs($additionalCrumbs = []) {
 
             if (strpos($currentPage, '/admin/settings/dashboard.php') !== false) {
                 $breadcrumbs[] = ['name' => 'Dashboard', 'url' => ''];
-            } elseif (strpos($currentPage, '/admin/settings/general.php') !== false) {
-                $breadcrumbs[] = ['name' => 'General', 'url' => ''];
-            } elseif (strpos($currentPage, '/admin/settings/email.php') !== false) {
-                $breadcrumbs[] = ['name' => 'Email', 'url' => ''];
-            } elseif (strpos($currentPage, '/admin/settings/security.php') !== false) {
-                $breadcrumbs[] = ['name' => 'Security', 'url' => ''];
             }
+        } elseif (strpos($currentPage, '/admin/audits.php') !== false) {
+            $breadcrumbs[] = ['name' => 'Audit Logs', 'url' => ''];
         }
     } elseif (strpos($currentPage, '/auth/') !== false) {
         // Always add Authentication as a link to the login page, regardless of current page
         $breadcrumbs[] = ['name' => 'Authentication', 'url' => getRelativePath('auth/login.php')];
-        
+
         if (strpos($currentPage, '/auth/login.php') !== false) {
             $breadcrumbs[] = ['name' => 'Login', 'url' => ''];
         } elseif (strpos($currentPage, '/auth/register.php') !== false) {
@@ -625,7 +723,32 @@ function generateBreadcrumbs($additionalCrumbs = []) {
         if (strpos($currentPage, '/clients/dashboard.php') !== false) {
             return '';
         }
+
+        // Always add Client as a link to the client dashboard, regardless of current page
+        $breadcrumbs[] = ['name' => 'Client', 'url' => getRelativePath('clients/dashboard.php')];
         
+        if (strpos($currentPage, '/clients/profile.php') !== false) {
+            $breadcrumbs[] = ['name' => 'Profile', 'url' => ''];
+        }
+    } elseif (strpos($currentPage, '/admin/audits.php') !== false) {
+        $breadcrumbs[] = ['name' => 'Audit Logs', 'url' => ''];
+    } elseif (strpos($currentPage, '/auth/') !== false) {
+        // Always add Authentication as a link to the login page, regardless of current page
+        $breadcrumbs[] = ['name' => 'Authentication', 'url' => getRelativePath('auth/login.php')];
+
+        if (strpos($currentPage, '/auth/login.php') !== false) {
+            $breadcrumbs[] = ['name' => 'Login', 'url' => ''];
+        } elseif (strpos($currentPage, '/auth/register.php') !== false) {
+            $breadcrumbs[] = ['name' => 'Register', 'url' => ''];
+        } elseif (strpos($currentPage, '/auth/forgot-password.php') !== false) {
+            $breadcrumbs[] = ['name' => 'Forgot Password', 'url' => ''];
+        }
+    } elseif (strpos($currentPage, '/clients/') !== false) {
+        // Don't show breadcrumbs on the main client dashboard
+        if (strpos($currentPage, '/clients/dashboard.php') !== false) {
+            return '';
+        }
+
         // Always add Client as a link to the client dashboard, regardless of current page
         $breadcrumbs[] = ['name' => 'Client', 'url' => getRelativePath('clients/dashboard.php')];
         
@@ -633,7 +756,7 @@ function generateBreadcrumbs($additionalCrumbs = []) {
             $breadcrumbs[] = ['name' => 'Profile', 'url' => ''];
         }
     }
-    
+
     // Add any additional breadcrumbs passed in
     $breadcrumbs = array_merge($breadcrumbs, $additionalCrumbs);
 

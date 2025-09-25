@@ -53,7 +53,16 @@ ob_start();
                             <div class="card-body d-flex flex-column">
                                 <h5 class="card-title">System Settings</h5>
                                 <p class="card-text flex-grow-1">Configure system-wide settings.</p>
-                                <a href="<?php echo getRelativePath('admin/settings/dashboard.php'); ?>" class="btn btn-primary">Configure</a>
+                                <a href="<?php echo getRelativePath('admin/settings/dashboard.php'); ?>" class="btn btn-primary mt-auto">Configure</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-dark text-light h-100">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">Audit Logs</h5>
+                                <p class="card-text flex-grow-1">View system activity and user actions.</p>
+                                <a href="<?php echo getRelativePath('admin/audits.php'); ?>" class="btn btn-primary mt-auto">View Logs</a>
                             </div>
                         </div>
                     </div>

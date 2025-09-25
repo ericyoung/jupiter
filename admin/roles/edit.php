@@ -65,11 +65,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $result = $stmt->execute([$displayName, $isClientRole, $hierarchyLevel, $description, $roleId]);
             
             if ($result) {
+                // Log the role update
+                $currentUserId = $_SESSION['user_id'];
+                logAudit($currentUserId, 'role_update', 'Updated role ID ' . $roleId . ' (' . $displayName . ')');
+                
                 setFlash('success', 'Role updated successfully!');
                 header('Location: list.php');
                 exit;
             } else {
                 $errors[] = 'Failed to update role.';
+                // Log the failure
+                $currentUserId = $_SESSION['user_id'];
+                logAudit($currentUserId, 'role_update_failed', 'Failed to update role ID ' . $roleId . ': Database error');
             }
         } catch (PDOException $e) {
             $errors[] = 'Database error: ' . $e->getMessage();
