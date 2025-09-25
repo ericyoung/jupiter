@@ -4,7 +4,7 @@ define('ENVIRONMENT', getenv('APP_ENV') ?: 'development'); // Set via environmen
 
 // Database configuration
 define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
-define('DB_PORT', getenv('DB_PORT') ?: '8889'); // Based on your SQL dump - update as needed
+define('DB_PORT', getenv('DB_PORT') ?: '3306'); // Based on your SQL dump - update as needed
 define('DB_NAME', getenv('DB_NAME') ?: 'byp');
 define('DB_USER', getenv('DB_USER') ?: 'root'); // Update as needed
 define('DB_PASS', getenv('DB_PASS') ?: 'root'); // Update as needed - default for MAMP

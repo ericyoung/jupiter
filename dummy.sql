@@ -9,4 +9,4 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `role_id`, `is_active`, 
 INSERT INTO `audits` (`user_id`, `action`, `description`, `ip_address`, `user_agent`, `created_at`) VALUES
 (1, 'user_login', 'User logged in successfully', '127.0.0.1', 'Mozilla/5.0 (example)', '2025-09-25 10:00:00'),
 (1, 'user_update', 'Updated user profile information', '127.0.0.1', 'Mozilla/5.0 (example)', '2025-09-25 10:05:00'),
-(2, 'role_create', '
+(2, 'role_create', 'Created new role: moderator', '127.0.0.1', 'Mozilla/5.0 (example)', '2025-09-25 10:10:00');
