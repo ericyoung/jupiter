@@ -27,7 +27,6 @@ ob_start();
             <div class="card-header d-flex justify-content-between align-items-center">
                 <div>
                     <h3>Manage Roles</h3>
-                    <?php echo generateBreadcrumbs(); ?>
                 </div>
                 <a href="create.php" class="btn btn-primary">Create New Role</a>
             </div>

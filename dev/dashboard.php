@@ -8,6 +8,11 @@ if (ENVIRONMENT !== 'development') {
     exit;
 }
 
+setCustomBreadcrumbs([
+    ['name' => 'Dashboard', 'url' => getRelativePath('admin/dashboard.php')],
+    ['name' => 'Developer', 'url' => '']
+]);
+
 $title = "Developer Dashboard - " . SITE_NAME;
 ob_start();
 ?>
@@ -21,7 +26,7 @@ ob_start();
             <div class="card-body">
                 <h4>Welcome, Developer!</h4>
                 <p>This is the development environment dashboard. Here you can access development tools.</p>
-                
+
                 <div class="row">
                     <div class="col-md-4">
                         <div class="card bg-dark text-light">

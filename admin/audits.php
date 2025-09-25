@@ -14,6 +14,11 @@ if (isClient()) {
     exit;
 }
 
+setCustomBreadcrumbs([
+    ['name' => 'Dashboard', 'url' => getRelativePath('admin/dashboard.php')],
+    ['name' => 'Audits', 'url' => '']
+]);
+
 // Check if user has permission to view audit logs (superadmin, executive, or accounts)
 $userRole = $_SESSION['role'] ?? '';
 $allowedRoles = ['superadmin', 'executive', 'accounts'];
@@ -76,12 +81,11 @@ ob_start();
         <div class="card">
             <div class="card-header">
                 <h3>Audit Logs</h3>
-                <?php echo generateBreadcrumbs(); ?>
             </div>
             <div class="card-body">
                 <h4>Welcome, <?php echo htmlspecialchars($_SESSION['name']); ?>!</h4>
                 <p>All user actions are logged for security and compliance purposes.</p>
-                
+
                 <!-- Search and Filter Form -->
                 <div class="row mb-4">
                     <div class="col-md-6">
@@ -102,7 +106,7 @@ ob_start();
                         </form>
                     </div>
                 </div>
-                
+
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
@@ -141,23 +145,23 @@ ob_start();
                         </tbody>
                     </table>
                 </div>
-                
+
                 <!-- Pagination -->
                 <?php if ($totalPages > 1): ?>
                 <nav aria-label="Audit logs pagination">
                     <ul class="pagination justify-content-center">
-                        <?php 
+                        <?php
                         // Calculate pagination range to show
                         $startPage = max(1, $page - 2);
                         $endPage = min($totalPages, $page + 2);
                         ?>
-                        
+
                         <?php if ($page > 1): ?>
                             <li class="page-item">
                                 <a class="page-link" href="?page=<?php echo ($page - 1); ?><?php echo $startDate ? '&start_date=' . urlencode($startDate) : ''; ?><?php echo $endDate ? '&end_date=' . urlencode($endDate) : ''; ?>">Previous</a>
                             </li>
                         <?php endif; ?>
-                        
+
                         <?php if ($startPage > 1): ?>
                             <li class="page-item">
                                 <a class="page-link" href="?page=1<?php echo $startDate ? '&start_date=' . urlencode($startDate) : ''; ?><?php echo $endDate ? '&end_date=' . urlencode($endDate) : ''; ?>">1</a>
@@ -168,13 +172,13 @@ ob_start();
                                 </li>
                             <?php endif; ?>
                         <?php endif; ?>
-                        
+
                         <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
                             <li class="page-item <?php echo ($i == $page) ? 'active' : ''; ?>">
                                 <a class="page-link" href="?page=<?php echo $i; ?><?php echo $startDate ? '&start_date=' . urlencode($startDate) : ''; ?><?php echo $endDate ? '&end_date=' . urlencode($endDate) : ''; ?>"><?php echo $i; ?></a>
                             </li>
                         <?php endfor; ?>
-                        
+
                         <?php if ($endPage < $totalPages): ?>
                             <?php if ($endPage < $totalPages - 1): ?>
                                 <li class="page-item disabled">
@@ -185,7 +189,7 @@ ob_start();
                                 <a class="page-link" href="?page=<?php echo $totalPages; ?><?php echo $startDate ? '&start_date=' . urlencode($startDate) : ''; ?><?php echo $endDate ? '&end_date=' . urlencode($endDate) : ''; ?>"><?php echo $totalPages; ?></a>
                             </li>
                         <?php endif; ?>
-                        
+
                         <?php if ($page < $totalPages): ?>
                             <li class="page-item">
                                 <a class="page-link" href="?page=<?php echo ($page + 1); ?><?php echo $startDate ? '&start_date=' . urlencode($startDate) : ''; ?><?php echo $endDate ? '&end_date=' . urlencode($endDate) : ''; ?>">Next</a>
@@ -194,9 +198,9 @@ ob_start();
                     </ul>
                 </nav>
                 <?php endif; ?>
-                
+
                 <div class="mt-3">
-                    <p>Total records: <?php echo $totalCount; ?> 
+                    <p>Total records: <?php echo $totalCount; ?>
                     <?php if ($startDate || $endDate): ?>
                         (filtered from <?php echo date('Y-m-d', strtotime($startDate ?: 'now')); ?> to <?php echo date('Y-m-d', strtotime($endDate ?: 'now')); ?>)
                     <?php endif; ?>

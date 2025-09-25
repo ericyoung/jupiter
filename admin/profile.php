@@ -13,6 +13,11 @@ if (isClient()) {
     exit;
 }
 
+setCustomBreadcrumbs([
+    ['name' => 'Dashboard', 'url' => getRelativePath('')],
+    ['name' => 'User Profile', 'url' => '']
+]);
+
 // Initialize variables
 $message = '';
 $error = '';
@@ -25,9 +30,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: ' . $_SERVER['PHP_SELF']);
         exit;
     }
-    
+
     $name = sanitizeInput($_POST['name'] ?? '');
-    
+
     // Validation
     if (empty($name)) {
         setFlash('error', 'Name is required.');
@@ -36,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             global $pdo;
             $stmt = $pdo->prepare("UPDATE users SET name = ? WHERE id = ?");
             $result = $stmt->execute([$name, $_SESSION['user_id']]);
-            
+
             if ($result) {
                 // Update session name
                 $_SESSION['name'] = $name;
@@ -96,7 +101,7 @@ ob_start();
                         <button type="submit" class="btn btn-primary">Update Profile</button>
                     </div>
                 </form>
-                
+
                 <div class="mt-3">
                     <a href="<?php echo getRelativePath('admin/dashboard.php'); ?>" class="btn btn-secondary">Back to Dashboard</a>
                 </div>

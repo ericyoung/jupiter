@@ -13,6 +13,12 @@ if (isClient()) {
     exit;
 }
 
+setCustomBreadcrumbs([
+    ['name' => 'Dashboard', 'url' => getRelativePath('admin/dashboard.php')],
+    ['name' => 'Users', 'url' => getRelativePath('admin/users/list.php')],
+    ['name' => 'Edit', 'url' => '']
+]);
+
 // Check if user has permission to manage users (superadmin, executive, or accounts)
 $userRole = $_SESSION['role'] ?? '';
 $allowedRoles = ['superadmin', 'executive', 'accounts'];
@@ -115,14 +121,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $roleId = $roleData['id'];
         $targetHierarchy = $roleData['hierarchy_level'];
-        
+
         // Check if current user has permission to assign this role based on hierarchy
         // Get current user's role details
         $currentRoleStmt = $pdo->prepare("SELECT r.hierarchy_level FROM users u JOIN roles r ON u.role_id = r.id WHERE u.id = ?");
         $currentRoleStmt->execute([$_SESSION['user_id']]);
         $currentRoleDetails = $currentRoleStmt->fetch();
         $currentUserHierarchy = $currentRoleDetails['hierarchy_level'] ?? 0;
-        
+
         // Superadmin special case: can assign any role except to other superadmins (unless editing own profile)
         $currentUserRole = $_SESSION['role'] ?? '';
         if ($currentUserRole === 'superadmin' && !($user['role'] === 'superadmin' && $userId != $_SESSION['user_id'])) {
@@ -145,11 +151,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if ($userId == $_SESSION['user_id']) {
                         $_SESSION['name'] = $name; // Update session name to reflect the change
                     }
-                    
+
                     // Log the user update
                     $currentUserId = $_SESSION['user_id'];
                     logAudit($currentUserId, 'user_update', 'Updated user ID ' . $userId . ' (' . $name . ')');
-                    
+
                     setFlash('success', 'User updated successfully!');
                     // Redirect to prevent resubmission on refresh
                     header('Location: list.php');
@@ -187,7 +193,6 @@ ob_start();
         <div class="card">
             <div class="card-header">
                 <h3>Edit User</h3>
-                <?php echo generateBreadcrumbs(); ?>
             </div>
             <div class="card-body">
                 <form method="POST">
@@ -214,7 +219,7 @@ ob_start();
                             ?>
                                 <option value="<?php echo htmlspecialchars($role_option['name']); ?>"
                                     <?php echo $user['role'] === $role_option['name'] ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($role_option['display_name']); ?> 
+                                    <?php echo htmlspecialchars($role_option['display_name']); ?>
                                     <?php if ($role_option['is_client_role']): ?>
                                         (Client Role)
                                     <?php else: ?>

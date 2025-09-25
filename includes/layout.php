@@ -73,6 +73,17 @@ if (!headers_sent()) {
 
     <div class="container mt-4">
         <?php
+        // Display custom breadcrumbs if available, otherwise use auto-generated ones
+        $custom_breadcrumbs = generateCustomBreadcrumbs();
+        if (!empty($custom_breadcrumbs)) {
+            echo $custom_breadcrumbs;
+        } else {
+            // Fallback to automatic breadcrumbs if needed
+            // (call the original function if we want to keep it)
+            // echo generateBreadcrumbs(); 
+        }
+        ?>
+        <?php
         // Display GET-based messages (for backward compatibility)
         if (isset($_GET['message'])): ?>
             <div class="alert alert-success alert-dismissible fade show" role="alert">

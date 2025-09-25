@@ -13,6 +13,11 @@ if (isClient()) {
     exit;
 }
 
+setCustomBreadcrumbs([
+    ['name' => 'Dashboard', 'url' => getRelativePath('admin/dashboard.php')],
+    ['name' => 'Users', 'url' => '']
+]);
+
 // Check if user has permission to manage users (superadmin, executive, or accounts)
 $userRole = $_SESSION['role'] ?? '';
 $allowedRoles = ['superadmin', 'executive', 'accounts'];
@@ -37,7 +42,6 @@ ob_start();
             <div class="card-header d-flex justify-content-between align-items-center">
                 <div>
                     <h3>Manage Users</h3>
-                    <?php echo generateBreadcrumbs(); ?>
                 </div>
             </div>
             <div class="card-body">
@@ -77,23 +81,23 @@ ob_start();
                                 </td>
                                 <td><?php echo htmlspecialchars($user['created_at']); ?></td>
                                 <td>
-                                    <?php 
+                                    <?php
                                     // Check if current user has permission to edit this user based on hierarchy
                                     $currentUserRole = $_SESSION['role'] ?? '';
-                                    
+
                                     // Get current user's role details to compare hierarchy
                                     global $pdo;
                                     $currentRoleStmt = $pdo->prepare("SELECT r.hierarchy_level FROM users u JOIN roles r ON u.role_id = r.id WHERE u.id = ?");
                                     $currentRoleStmt->execute([$_SESSION['user_id']]);
                                     $currentRoleDetails = $currentRoleStmt->fetch();
-                                    
+
                                     $currentUserHierarchy = $currentRoleDetails['hierarchy_level'] ?? 0;
-                                    
+
                                     // Get the user being edited's hierarchy level
                                     $targetUserHierarchy = $user['hierarchy_level'] ?? 0;
-                                    
+
                                     $canEdit = false;
-                                    
+
                                     // Superadmin special case: can edit anyone except other superadmins (unless it's themselves)
                                     if ($currentUserRole === 'superadmin') {
                                         if ($user['role'] === 'superadmin' && $user['id'] != $_SESSION['user_id']) {
@@ -105,8 +109,8 @@ ob_start();
                                         // For non-superadmins: can only edit users with hierarchy at or below their own
                                         $canEdit = $currentUserHierarchy >= $targetUserHierarchy;
                                     }
-                                    
-                                    if ($canEdit): 
+
+                                    if ($canEdit):
                                     ?>
                                         <a href="edit.php?id=<?php echo urlencode($user['id']); ?>" class="btn btn-sm btn-primary">Edit</a>
                                     <?php else: ?>

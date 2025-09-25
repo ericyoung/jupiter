@@ -14,6 +14,11 @@ if (isClient()) {
     exit;
 }
 
+setCustomBreadcrumbs([
+    ['name' => 'Dashboard', 'url' => getRelativePath('admin/dashboard.php')],
+    ['name' => 'Settings', 'url' => '']
+]);
+
 $title = "Settings Dashboard - " . SITE_NAME;
 ob_start();
 ?>
@@ -23,12 +28,11 @@ ob_start();
         <div class="card">
             <div class="card-header">
                 <h3>Settings Dashboard</h3>
-                <?php echo generateBreadcrumbs(); ?>
             </div>
             <div class="card-body">
                 <h4>Welcome, <?php echo htmlspecialchars($_SESSION['name']); ?>!</h4>
                 <p>This is the settings dashboard where you can manage system-wide configuration options.</p>
-                
+
                 <div class="row g-4">
                     <div class="col-md-4">
                         <div class="card bg-dark text-light h-100">

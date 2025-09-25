@@ -14,6 +14,12 @@ if (isClient()) {
     exit;
 }
 
+setCustomBreadcrumbs([
+    ['name' => 'Dashboard', 'url' => getRelativePath('admin/dashboard.php')],
+    ['name' => 'Settings', 'url' => getRelativePath('admin/settings/dashboard.php')],
+    ['name' => 'Email', 'url' => '']
+]);
+
 // Check if user has permission to manage settings (superadmin, executive, or accounts)
 $userRole = $_SESSION['role'] ?? '';
 $allowedRoles = ['superadmin', 'executive', 'accounts'];
@@ -32,38 +38,37 @@ ob_start();
         <div class="card">
             <div class="card-header">
                 <h3>Email Settings</h3>
-                <?php echo generateBreadcrumbs(); ?>
             </div>
             <div class="card-body">
                 <h4>Welcome, <?php echo htmlspecialchars($_SESSION['name']); ?>!</h4>
                 <p>Configure email server and templates.</p>
-                
+
                 <form method="POST">
                     <div class="mb-3">
                         <label for="smtpHost" class="form-label">SMTP Host</label>
                         <input type="text" class="form-control" id="smtpHost" name="smtp_host" value="smtp.gmail.com">
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="smtpPort" class="form-label">SMTP Port</label>
                         <input type="number" class="form-control" id="smtpPort" name="smtp_port" value="587">
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="smtpUser" class="form-label">SMTP Username</label>
                         <input type="text" class="form-control" id="smtpUser" name="smtp_user" value="">
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="smtpPass" class="form-label">SMTP Password</label>
                         <input type="password" class="form-control" id="smtpPass" name="smtp_pass" value="">
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="emailFrom" class="form-label">From Email</label>
                         <input type="email" class="form-control" id="emailFrom" name="email_from" value="noreply@example.com">
                     </div>
-                    
+
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                         <button type="submit" class="btn btn-primary">Save Settings</button>
                     </div>

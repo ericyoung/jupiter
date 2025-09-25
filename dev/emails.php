@@ -8,6 +8,12 @@ if (ENVIRONMENT !== 'development') {
     exit;
 }
 
+setCustomBreadcrumbs([
+    ['name' => 'Dashboard', 'url' => getRelativePath('admin/dashboard.php')],
+    ['name' => 'Developer', 'url' => getRelativePath('dev/dashboard.php')],
+    ['name' => 'Emails', 'url' => '']
+]);
+
 $message = '';
 $error = '';
 
@@ -26,20 +32,20 @@ ob_start();
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h3>Email Tracking</h3>
-                <a href="?action=clear&confirm=1" class="btn btn-danger btn-sm" 
+                <a href="?action=clear&confirm=1" class="btn btn-danger btn-sm"
                    onclick="return confirm('Are you sure you want to clear all emails?')">Clear All Emails</a>
             </div>
             <div class="card-body">
                 <?php if ($message): ?>
                     <div class="alert alert-success"><?php echo htmlspecialchars($message); ?></div>
                 <?php endif; ?>
-                
+
                 <?php if ($error): ?>
                     <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
                 <?php endif; ?>
-                
+
                 <p>This page shows emails that would have been sent in production.</p>
-                
+
                 <div class="table-responsive">
                     <table class="table table-dark">
                         <thead>
@@ -52,9 +58,9 @@ ob_start();
                             </tr>
                         </thead>
                         <tbody>
-                            <?php 
+                            <?php
                             $emails = array_reverse($emailTracker->getEmails(20)); // Get last 20 emails, newest first
-                            if (empty($emails)): 
+                            if (empty($emails)):
                             ?>
                                 <tr>
                                     <td colspan="5" class="text-center">No emails sent yet.</td>

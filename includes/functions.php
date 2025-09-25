@@ -445,15 +445,15 @@ function getRelativePath($target) {
  */
 function logAudit($userId, $action, $description = '') {
     global $pdo;
-    
+
     try {
         $stmt = $pdo->prepare("INSERT INTO audits (user_id, action, description, ip_address, user_agent) VALUES (?, ?, ?, ?, ?)");
-        
+
         $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '';
         $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
-        
+
         $result = $stmt->execute([$userId, $action, $description, $ipAddress, $userAgent]);
-        
+
         return $result;
     } catch (PDOException $e) {
         error_log("Audit logging failed: " . $e->getMessage());
@@ -472,12 +472,12 @@ function logAudit($userId, $action, $description = '') {
  */
 function getUserAudits($userId, $limit = 50, $offset = 0, $startDate = '', $endDate = '') {
     global $pdo;
-    
+
     try {
         // Build the query with optional date filtering
         $whereClause = "a.user_id = ?";
         $params = [$userId];
-        
+
         if (!empty($startDate)) {
             $whereClause .= " AND DATE(a.created_at) >= ?";
             $params[] = $startDate;
@@ -486,13 +486,13 @@ function getUserAudits($userId, $limit = 50, $offset = 0, $startDate = '', $endD
             $whereClause .= " AND DATE(a.created_at) <= ?";
             $params[] = $endDate;
         }
-        
+
         $query = "SELECT a.*, u.name as username FROM audits a LEFT JOIN users u ON a.user_id = u.id WHERE $whereClause ORDER BY a.created_at DESC LIMIT ? OFFSET ?";
         $paramsWithLimit = array_merge($params, [$limit, $offset]);
-        
+
         $stmt = $pdo->prepare($query);
         $stmt->execute($paramsWithLimit);
-        
+
         return $stmt->fetchAll();
     } catch (PDOException $e) {
         error_log("Audit retrieval failed: " . $e->getMessage());
@@ -510,12 +510,12 @@ function getUserAudits($userId, $limit = 50, $offset = 0, $startDate = '', $endD
  */
 function getAllAudits($limit = 50, $offset = 0, $startDate = '', $endDate = '') {
     global $pdo;
-    
+
     try {
         // Build the query with optional date filtering
         $whereClause = "1=1";
         $params = [];
-        
+
         if (!empty($startDate)) {
             $whereClause .= " AND DATE(a.created_at) >= ?";
             $params[] = $startDate;
@@ -524,13 +524,13 @@ function getAllAudits($limit = 50, $offset = 0, $startDate = '', $endDate = '') 
             $whereClause .= " AND DATE(a.created_at) <= ?";
             $params[] = $endDate;
         }
-        
+
         $query = "SELECT a.*, u.name as username FROM audits a LEFT JOIN users u ON a.user_id = u.id WHERE $whereClause ORDER BY a.created_at DESC LIMIT ? OFFSET ?";
         $paramsWithLimit = array_merge($params, [$limit, $offset]);
-        
+
         $stmt = $pdo->prepare($query);
         $stmt->execute($paramsWithLimit);
-        
+
         return $stmt->fetchAll();
     } catch (PDOException $e) {
         error_log("Audit retrieval failed: " . $e->getMessage());
@@ -649,136 +649,195 @@ if (isset($_GET['action']) && $_GET['action'] === 'confirm') {
     exit;
 }
 
-/**
- * Generate breadcrumbs based on the current page path
- * @param array $additionalCrumbs Additional breadcrumbs to append
- * @return string HTML for the breadcrumb navigation
- */
-function generateBreadcrumbs($additionalCrumbs = []) {
-    $currentPage = $_SERVER['REQUEST_URI'] ?? '';
+// /**
+//  * Generate breadcrumbs based on the current page path
+//  * @param array $additionalCrumbs Additional breadcrumbs to append
+//  * @return string HTML for the breadcrumb navigation
+//  */
+// function generateBreadcrumbs($additionalCrumbs = []) {
+//     $currentPage = $_SERVER['REQUEST_URI'] ?? '';
+//
+//     // Don't show breadcrumbs on the main index page
+//     if (strpos($currentPage, '/index.php') !== false || empty($currentPage) || $currentPage === '/') {
+//         return '';
+//     }
+//
+//     // Define the base navigation structure
+//     $breadcrumbs = [];
+//
+//     // Determine the page type and build appropriate path
+//     if (strpos($currentPage, '/admin/') !== false) {
+//         // Don't show breadcrumbs on the main admin dashboard
+//         if (strpos($currentPage, '/admin/dashboard.php') !== false) {
+//             return '';
+//         }
+//
+//         // Always show Admin as the first breadcrumb for all admin pages except the dashboard
+//         $breadcrumbs[] = ['name' => 'Dashboard', 'url' => getRelativePath('admin/dashboard.php')];
+//
+//         if (strpos($currentPage, '/admin/users/') !== false) {
+//             // Always add Users as a link to the list page, regardless of current page
+//             $breadcrumbs[] = ['name' => 'Users', 'url' => getRelativePath('admin/users/list.php')];
+//
+//             if (strpos($currentPage, '/admin/users/list.php') !== false) {
+//                 $breadcrumbs[] = ['name' => 'List', 'url' => ''];
+//             } elseif (strpos($currentPage, '/admin/users/create.php') !== false) {
+//                 $breadcrumbs[] = ['name' => 'Create', 'url' => ''];
+//             } elseif (strpos($currentPage, '/admin/users/edit.php') !== false) {
+//                 $breadcrumbs[] = ['name' => 'Edit', 'url' => ''];
+//             }
+//         } elseif (strpos($currentPage, '/admin/roles/') !== false) {
+//             // Always add Roles as a link to the list page, regardless of current page
+//             $breadcrumbs[] = ['name' => 'Roles', 'url' => getRelativePath('admin/roles/list.php')];
+//
+//             if (strpos($currentPage, '/admin/roles/list.php') !== false) {
+//                 $breadcrumbs[] = ['name' => 'List', 'url' => ''];
+//             } elseif (strpos($currentPage, '/admin/roles/create.php') !== false) {
+//                 $breadcrumbs[] = ['name' => 'Create', 'url' => ''];
+//             } elseif (strpos($currentPage, '/admin/roles/edit.php') !== false) {
+//                 $breadcrumbs[] = ['name' => 'Edit', 'url' => ''];
+//             }
+//         } elseif (strpos($currentPage, '/admin/settings/') !== false) {
+//             // Always add Settings as a link to the settings dashboard, regardless of current page
+//             $breadcrumbs[] = ['name' => 'Settings', 'url' => getRelativePath('admin/settings/dashboard.php')];
+//
+//             if (strpos($currentPage, '/admin/settings/dashboard.php') !== false) {
+//                 $breadcrumbs[] = ['name' => 'Dashboard', 'url' => ''];
+//             }
+//         } elseif (strpos($currentPage, '/admin/audits.php') !== false) {
+//             $breadcrumbs[] = ['name' => 'Audit Logs', 'url' => ''];
+//         }
+//     } elseif (strpos($currentPage, '/auth/') !== false) {
+//         // Always add Authentication as a link to the login page, regardless of current page
+//         $breadcrumbs[] = ['name' => 'Authentication', 'url' => getRelativePath('auth/login.php')];
+//
+//         if (strpos($currentPage, '/auth/login.php') !== false) {
+//             $breadcrumbs[] = ['name' => 'Login', 'url' => ''];
+//         } elseif (strpos($currentPage, '/auth/register.php') !== false) {
+//             $breadcrumbs[] = ['name' => 'Register', 'url' => ''];
+//         } elseif (strpos($currentPage, '/auth/forgot-password.php') !== false) {
+//             $breadcrumbs[] = ['name' => 'Forgot Password', 'url' => ''];
+//         }
+//     } elseif (strpos($currentPage, '/clients/') !== false) {
+//         // Don't show breadcrumbs on the main client dashboard
+//         if (strpos($currentPage, '/clients/dashboard.php') !== false) {
+//             return '';
+//         }
+//
+//         // Always add Client as a link to the client dashboard, regardless of current page
+//         $breadcrumbs[] = ['name' => 'Client', 'url' => getRelativePath('clients/dashboard.php')];
+//
+//         if (strpos($currentPage, '/clients/profile.php') !== false) {
+//             $breadcrumbs[] = ['name' => 'Profile', 'url' => ''];
+//         }
+//     } elseif (strpos($currentPage, '/admin/audits.php') !== false) {
+//         $breadcrumbs[] = ['name' => 'Audit Logs', 'url' => ''];
+//     } elseif (strpos($currentPage, '/auth/') !== false) {
+//         // Always add Authentication as a link to the login page, regardless of current page
+//         $breadcrumbs[] = ['name' => 'Authentication', 'url' => getRelativePath('auth/login.php')];
+//
+//         if (strpos($currentPage, '/auth/login.php') !== false) {
+//             $breadcrumbs[] = ['name' => 'Login', 'url' => ''];
+//         } elseif (strpos($currentPage, '/auth/register.php') !== false) {
+//             $breadcrumbs[] = ['name' => 'Register', 'url' => ''];
+//         } elseif (strpos($currentPage, '/auth/forgot-password.php') !== false) {
+//             $breadcrumbs[] = ['name' => 'Forgot Password', 'url' => ''];
+//         }
+//     } elseif (strpos($currentPage, '/clients/') !== false) {
+//         // Don't show breadcrumbs on the main client dashboard
+//         if (strpos($currentPage, '/clients/dashboard.php') !== false) {
+//             return '';
+//         }
+//
+//         // Always add Client as a link to the client dashboard, regardless of current page
+//         $breadcrumbs[] = ['name' => 'Client', 'url' => getRelativePath('clients/dashboard.php')];
+//
+//         if (strpos($currentPage, '/clients/profile.php') !== false) {
+//             $breadcrumbs[] = ['name' => 'Profile', 'url' => ''];
+//         }
+//     }
+//
+//     // Add any additional breadcrumbs passed in
+//     $breadcrumbs = array_merge($breadcrumbs, $additionalCrumbs);
+//
+//     // Generate the HTML
+//     $html = '<nav aria-label="breadcrumb">';
+//     $html .= '<ol class="breadcrumb">';
+//
+//     foreach ($breadcrumbs as $index => $crumb) {
+//         $isActive = ($index === count($breadcrumbs) - 1 && empty($crumb['url']));
+//         $html .= '<li class="breadcrumb-item ' . ($isActive ? 'active' : '') . '">';
+//
+//         if ($isActive) {
+//             $html .= $crumb['name'];
+//         } else {
+//             $html .= '<a href="' . $crumb['url'] . '">' . $crumb['name'] . '</a>';
+//         }
+//
+//         $html .= '</li>';
+//     }
+//
+//     $html .= '</ol>';
+//     $html .= '</nav>';
+//
+//     return $html;
+// }
 
-    // Don't show breadcrumbs on the main index page
-    if (strpos($currentPage, '/index.php') !== false || empty($currentPage) || $currentPage === '/') {
+/**
+ * Set custom breadcrumbs for the current page
+ * @param array $breadcrumbs Array of breadcrumb items with 'url' and 'name' keys
+ */
+function setCustomBreadcrumbs($breadcrumbs) {
+    $_SESSION['custom_breadcrumbs'] = $breadcrumbs;
+}
+
+/**
+ * Get custom breadcrumbs for the current page
+ * @return array
+ */
+function getCustomBreadcrumbs() {
+    return $_SESSION['custom_breadcrumbs'] ?? [];
+}
+
+/**
+ * Generate custom breadcrumbs HTML based on user-defined breadcrumbs
+ * @return string HTML for breadcrumbs
+ */
+function generateCustomBreadcrumbs() {
+    $breadcrumbs = getCustomBreadcrumbs();
+
+    if (empty($breadcrumbs)) {
         return '';
     }
 
-    // Define the base navigation structure
-    $breadcrumbs = [];
+    $html = '<nav aria-label="breadcrumb"><ol class="breadcrumb">';
 
-    // Determine the page type and build appropriate path
-    if (strpos($currentPage, '/admin/') !== false) {
-        // Don't show breadcrumbs on the main admin dashboard
-        if (strpos($currentPage, '/admin/dashboard.php') !== false) {
-            return '';
+    foreach ($breadcrumbs as $index => $breadcrumb) {
+        $isLast = ($index === count($breadcrumbs) - 1);
+
+        $html .= '<li class="breadcrumb-item';
+        if ($isLast) {
+            $html .= ' active" aria-current="page';
         }
+        $html .= '">';
 
-        // Always show Admin as the first breadcrumb for all admin pages except the dashboard
-        $breadcrumbs[] = ['name' => 'Admin', 'url' => getRelativePath('admin/dashboard.php')];
-
-        if (strpos($currentPage, '/admin/users/') !== false) {
-            // Always add Users as a link to the list page, regardless of current page
-            $breadcrumbs[] = ['name' => 'Users', 'url' => getRelativePath('admin/users/list.php')];
-
-            if (strpos($currentPage, '/admin/users/list.php') !== false) {
-                $breadcrumbs[] = ['name' => 'List', 'url' => ''];
-            } elseif (strpos($currentPage, '/admin/users/create.php') !== false) {
-                $breadcrumbs[] = ['name' => 'Create', 'url' => ''];
-            } elseif (strpos($currentPage, '/admin/users/edit.php') !== false) {
-                $breadcrumbs[] = ['name' => 'Edit', 'url' => ''];
-            }
-        } elseif (strpos($currentPage, '/admin/roles/') !== false) {
-            // Always add Roles as a link to the list page, regardless of current page
-            $breadcrumbs[] = ['name' => 'Roles', 'url' => getRelativePath('admin/roles/list.php')];
-
-            if (strpos($currentPage, '/admin/roles/list.php') !== false) {
-                $breadcrumbs[] = ['name' => 'List', 'url' => ''];
-            } elseif (strpos($currentPage, '/admin/roles/create.php') !== false) {
-                $breadcrumbs[] = ['name' => 'Create', 'url' => ''];
-            } elseif (strpos($currentPage, '/admin/roles/edit.php') !== false) {
-                $breadcrumbs[] = ['name' => 'Edit', 'url' => ''];
-            }
-        } elseif (strpos($currentPage, '/admin/settings/') !== false) {
-            // Always add Settings as a link to the settings dashboard, regardless of current page
-            $breadcrumbs[] = ['name' => 'Settings', 'url' => getRelativePath('admin/settings/dashboard.php')];
-
-            if (strpos($currentPage, '/admin/settings/dashboard.php') !== false) {
-                $breadcrumbs[] = ['name' => 'Dashboard', 'url' => ''];
-            }
-        } elseif (strpos($currentPage, '/admin/audits.php') !== false) {
-            $breadcrumbs[] = ['name' => 'Audit Logs', 'url' => ''];
-        }
-    } elseif (strpos($currentPage, '/auth/') !== false) {
-        // Always add Authentication as a link to the login page, regardless of current page
-        $breadcrumbs[] = ['name' => 'Authentication', 'url' => getRelativePath('auth/login.php')];
-
-        if (strpos($currentPage, '/auth/login.php') !== false) {
-            $breadcrumbs[] = ['name' => 'Login', 'url' => ''];
-        } elseif (strpos($currentPage, '/auth/register.php') !== false) {
-            $breadcrumbs[] = ['name' => 'Register', 'url' => ''];
-        } elseif (strpos($currentPage, '/auth/forgot-password.php') !== false) {
-            $breadcrumbs[] = ['name' => 'Forgot Password', 'url' => ''];
-        }
-    } elseif (strpos($currentPage, '/clients/') !== false) {
-        // Don't show breadcrumbs on the main client dashboard
-        if (strpos($currentPage, '/clients/dashboard.php') !== false) {
-            return '';
-        }
-
-        // Always add Client as a link to the client dashboard, regardless of current page
-        $breadcrumbs[] = ['name' => 'Client', 'url' => getRelativePath('clients/dashboard.php')];
-        
-        if (strpos($currentPage, '/clients/profile.php') !== false) {
-            $breadcrumbs[] = ['name' => 'Profile', 'url' => ''];
-        }
-    } elseif (strpos($currentPage, '/admin/audits.php') !== false) {
-        $breadcrumbs[] = ['name' => 'Audit Logs', 'url' => ''];
-    } elseif (strpos($currentPage, '/auth/') !== false) {
-        // Always add Authentication as a link to the login page, regardless of current page
-        $breadcrumbs[] = ['name' => 'Authentication', 'url' => getRelativePath('auth/login.php')];
-
-        if (strpos($currentPage, '/auth/login.php') !== false) {
-            $breadcrumbs[] = ['name' => 'Login', 'url' => ''];
-        } elseif (strpos($currentPage, '/auth/register.php') !== false) {
-            $breadcrumbs[] = ['name' => 'Register', 'url' => ''];
-        } elseif (strpos($currentPage, '/auth/forgot-password.php') !== false) {
-            $breadcrumbs[] = ['name' => 'Forgot Password', 'url' => ''];
-        }
-    } elseif (strpos($currentPage, '/clients/') !== false) {
-        // Don't show breadcrumbs on the main client dashboard
-        if (strpos($currentPage, '/clients/dashboard.php') !== false) {
-            return '';
-        }
-
-        // Always add Client as a link to the client dashboard, regardless of current page
-        $breadcrumbs[] = ['name' => 'Client', 'url' => getRelativePath('clients/dashboard.php')];
-        
-        if (strpos($currentPage, '/clients/profile.php') !== false) {
-            $breadcrumbs[] = ['name' => 'Profile', 'url' => ''];
-        }
-    }
-
-    // Add any additional breadcrumbs passed in
-    $breadcrumbs = array_merge($breadcrumbs, $additionalCrumbs);
-
-    // Generate the HTML
-    $html = '<nav aria-label="breadcrumb">';
-    $html .= '<ol class="breadcrumb">';
-
-    foreach ($breadcrumbs as $index => $crumb) {
-        $isActive = ($index === count($breadcrumbs) - 1 && empty($crumb['url']));
-        $html .= '<li class="breadcrumb-item ' . ($isActive ? 'active' : '') . '">';
-
-        if ($isActive) {
-            $html .= $crumb['name'];
+        if (!empty($breadcrumb['url']) && !$isLast) {
+            $html .= '<a href="' . htmlspecialchars($breadcrumb['url']) . '">' . htmlspecialchars($breadcrumb['name']) . '</a>';
         } else {
-            $html .= '<a href="' . $crumb['url'] . '">' . $crumb['name'] . '</a>';
+            $html .= htmlspecialchars($breadcrumb['name']);
         }
 
         $html .= '</li>';
     }
 
-    $html .= '</ol>';
-    $html .= '</nav>';
+    $html .= '</ol></nav>';
 
     return $html;
+}
+
+/**
+ * Clear custom breadcrumbs
+ */
+function clearCustomBreadcrumbs() {
+    unset($_SESSION['custom_breadcrumbs']);
 }
