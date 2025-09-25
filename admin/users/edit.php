@@ -180,6 +180,7 @@ ob_start();
         <div class="card">
             <div class="card-header">
                 <h3>Edit User</h3>
+                <?php echo generateBreadcrumbs(); ?>
             </div>
             <div class="card-body">
                 <form method="POST">

@@ -23,6 +23,7 @@ ob_start();
         <div class="card">
             <div class="card-header">
                 <h3>Client Dashboard</h3>
+                <?php echo generateBreadcrumbs(); ?>
             </div>
             <div class="card-body">
                 <h4>Welcome, <?php echo htmlspecialchars($_SESSION['name']); ?>!</h4>

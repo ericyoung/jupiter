@@ -45,7 +45,7 @@ function redirectUser() {
     }
 
     $role = $_SESSION['role'] ?? '';
-    
+
     if ($role === 'client' || $role === 'client_admin') {
         header('Location: ../clients/dashboard.php');
     } else {
@@ -68,7 +68,7 @@ function checkAlreadyLoggedIn() {
     if (isLoggedIn()) {
         // Determine where to redirect based on role
         $role = $_SESSION['role'] ?? '';
-        
+
         if ($role === 'client' || $role === 'client_admin') {
             if (strpos($_SERVER['REQUEST_URI'], 'auth/') !== false) {
                 // If we're in the auth directory, go up one level to clients
@@ -128,7 +128,7 @@ function sanitizeInput($input) {
  */
 function getUserByEmail($email) {
     global $pdo;
-    
+
     $stmt = $pdo->prepare("SELECT u.*, r.name as role FROM users u LEFT JOIN roles r ON u.role_id = r.id WHERE u.email = ?");
     $stmt->execute([$email]);
     return $stmt->fetch();
@@ -139,7 +139,7 @@ function getUserByEmail($email) {
  */
 function getUserById($id) {
     global $pdo;
-    
+
     $stmt = $pdo->prepare("SELECT u.*, r.name as role, r.display_name, r.is_client_role, r.hierarchy_level FROM users u LEFT JOIN roles r ON u.role_id = r.id WHERE u.id = ?");
     $stmt->execute([$id]);
     return $stmt->fetch();
@@ -150,33 +150,33 @@ function getUserById($id) {
  */
 function registerUser($name, $email, $password) {
     global $pdo;
-    
+
     // Get the role_id for 'client' role
     $roleStmt = $pdo->prepare("SELECT id FROM roles WHERE name = 'client'");
     $roleStmt->execute();
     $role = $roleStmt->fetch();
-    
+
     if (!$role) {
         return false; // Role not found
     }
-    
+
     $hashedPassword = hashPassword($password);
     $token = generateToken();
     $roleId = $role['id'];
-    
+
     // Set is_active to 0 (not active) until email confirmation
     $stmt = $pdo->prepare("INSERT INTO users (name, email, password, role_id, is_active, activation_token) VALUES (?, ?, ?, ?, 0, ?)");
     $result = $stmt->execute([$name, $email, $hashedPassword, $roleId, $token]);
-    
+
     if ($result) {
         $userId = $pdo->lastInsertId();
-        
+
         // Send confirmation email
         sendConfirmationEmail($email, $name, $token);
-        
+
         return $userId;
     }
-    
+
     return false;
 }
 
@@ -185,9 +185,9 @@ function registerUser($name, $email, $password) {
  */
 function loginUser($email, $password) {
     global $pdo;
-    
+
     $user = getUserByEmail($email);
-    
+
     if ($user && verifyPassword($password, $user['password'])) {
         // Check if user is active
         if (!$user['is_active']) {
@@ -195,14 +195,14 @@ function loginUser($email, $password) {
             setFlash('error', 'Please confirm your email address before logging in. Check your email for the confirmation link.');
             return false;
         }
-        
+
         // User is active and password is correct
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['role'] = $user['role']; // role name is selected in the query
         $_SESSION['name'] = $user['name'];
         return true;
     }
-    
+
     // Invalid credentials
     return false;
 }
@@ -270,19 +270,19 @@ function getUserRoleDetails($userId) {
 function getAppRootPath() {
     // Get the directory of the current script relative to document root
     $script_dir = dirname($_SERVER['SCRIPT_NAME']);
-    
-    // Clean up the directory path 
+
+    // Clean up the directory path
     $clean_dir = trim($script_dir, '/');
-    
+
     // If we're already at root level, return empty string
     if ($clean_dir === '') {
         return '';
     }
-    
+
     // Count directory levels to determine how to get to root
     $dir_parts = explode('/', $clean_dir);
     $levels = count(array_filter($dir_parts));
-    
+
     // If we're in a subdirectory, we need to calculate the base path to the app
     // Actually, we just need to return the base path for the application
     // Let's use a simpler approach based on the script name
@@ -316,10 +316,10 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
  */
 function emailExists($email) {
     global $pdo;
-    
+
     $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
     $stmt->execute([$email]);
-    
+
     return $stmt->fetch() ? true : false;
 }
 
@@ -328,13 +328,13 @@ function emailExists($email) {
  */
 function generateResetToken($email) {
     global $pdo;
-    
+
     $token = generateToken();
     $expires = date("Y-m-d H:i:s", strtotime("+1 hour")); // Token expires in 1 hour
-    
+
     $stmt = $pdo->prepare("UPDATE users SET activation_token = ? WHERE email = ?");
     $result = $stmt->execute([$token, $email]);
-    
+
     return $result ? $token : false;
 }
 
@@ -343,17 +343,17 @@ function generateResetToken($email) {
  */
 function verifyResetToken($token) {
     global $pdo;
-    
+
     $stmt = $pdo->prepare("SELECT * FROM users WHERE activation_token = ? AND is_active = 1");
     $stmt->execute([$token]);
     $user = $stmt->fetch();
-    
+
     if ($user) {
         // Check if token has expired (implementation needed based on your requirements)
         // For now, we'll just return the user if token exists
         return $user;
     }
-    
+
     return false;
 }
 
@@ -362,12 +362,12 @@ function verifyResetToken($token) {
  */
 function resetPassword($token, $password) {
     global $pdo;
-    
+
     $hashedPassword = hashPassword($password);
-    
+
     $stmt = $pdo->prepare("UPDATE users SET password = ?, activation_token = NULL WHERE activation_token = ?");
     $result = $stmt->execute([$hashedPassword, $token]);
-    
+
     return $result;
 }
 
@@ -376,10 +376,10 @@ function resetPassword($token, $password) {
  */
 function activateAccount($token) {
     global $pdo;
-    
+
     $stmt = $pdo->prepare("UPDATE users SET is_active = 1, activation_token = NULL WHERE activation_token = ?");
     $result = $stmt->execute([$token]);
-    
+
     return $result;
 }
 
@@ -404,7 +404,7 @@ function validateCSRFToken($token) {
  * Check if request is valid (prevent simple script attacks)
  */
 function isValidRequest() {
-    return isset($_SERVER['HTTP_HOST']) && 
+    return isset($_SERVER['HTTP_HOST']) &&
            (!empty($_SERVER['HTTP_REFERER']) || $_SERVER['REQUEST_METHOD'] === 'GET');
 }
 
@@ -416,21 +416,21 @@ function isValidRequest() {
 function getRelativePath($target) {
     // Get the script's directory path
     $script_dir = dirname($_SERVER['SCRIPT_NAME']);
-    
+
     // Remove leading slash and get directory levels
     $clean_dir = trim($script_dir, '/');
-    
+
     // If we're at the root level (empty string after trim), no prefix needed
     if ($clean_dir === '') {
         return $target;
     }
-    
+
     // Count directory levels by counting slashes + 1
     // For '/admin/dashboard.php' -> dirname is '/admin' -> after trim: 'admin' -> 0 slashes + 1 = 1 level
     // For '/app/admin/dashboard.php' -> dirname is '/app/admin' -> after trim: 'app/admin' -> 1 slash + 1 = 2 levels
     $dir_parts = explode('/', $clean_dir);
     $levels = count(array_filter($dir_parts)); // Count non-empty directory names
-    
+
     // Create the prefix to go back to root
     $prefix = str_repeat('../', $levels);
     return $prefix . ltrim($target, '/');
@@ -445,7 +445,7 @@ function setFlash($type, $message) {
     if (!isset($_SESSION['flash_messages'])) {
         $_SESSION['flash_messages'] = [];
     }
-    
+
     $_SESSION['flash_messages'][] = [
         'type' => $type,
         'message' => $message,
@@ -492,7 +492,7 @@ function sendEmail($to, $subject, $body, $additionalData = []) {
         $headers = "MIME-Version: 1.0" . "\r\n";
         $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
         $headers .= 'From: ' . SITE_NAME . ' <no-reply@' . $_SERVER['HTTP_HOST'] . '>' . "\r\n";
-        
+
         return mail($to, $subject, $body, $headers);
     }
 }
@@ -502,11 +502,11 @@ function sendEmail($to, $subject, $body, $additionalData = []) {
  */
 function sendConfirmationEmail($email, $name, $token) {
     $subject = 'Confirm Your Account - ' . SITE_NAME;
-    
+
     // Build confirmation URL
     $siteUrl = rtrim(SITE_URL, '/');
     $confirmationUrl = $siteUrl . '/includes/functions.php?action=confirm&token=' . urlencode($token);
-    
+
     $body = "
     <html>
     <body>
@@ -520,7 +520,7 @@ function sendConfirmationEmail($email, $name, $token) {
     </body>
     </html>
     ";
-    
+
     return sendEmail($email, $subject, $body, ['type' => 'registration_confirmation']);
 }
 
@@ -529,7 +529,7 @@ function sendConfirmationEmail($email, $name, $token) {
  */
 if (isset($_GET['action']) && $_GET['action'] === 'confirm') {
     $token = $_GET['token'] ?? '';
-    
+
     if (!empty($token)) {
         $result = activateAccount($token);
         if ($result) {
@@ -545,4 +545,117 @@ if (isset($_GET['action']) && $_GET['action'] === 'confirm') {
         header('Location: ../index.php');
     }
     exit;
+}
+
+/**
+ * Generate breadcrumbs based on the current page path
+ * @param array $additionalCrumbs Additional breadcrumbs to append
+ * @return string HTML for the breadcrumb navigation
+ */
+function generateBreadcrumbs($additionalCrumbs = []) {
+    $currentPage = $_SERVER['REQUEST_URI'] ?? '';
+    
+    // Don't show breadcrumbs on the main index page
+    if (strpos($currentPage, '/index.php') !== false || empty($currentPage) || $currentPage === '/') {
+        return '';
+    }
+
+    // Define the base navigation structure
+    $breadcrumbs = [];
+
+    // Determine the page type and build appropriate path
+    if (strpos($currentPage, '/admin/') !== false) {
+        // Don't show breadcrumbs on the main admin dashboard
+        if (strpos($currentPage, '/admin/dashboard.php') !== false) {
+            return '';
+        }
+        
+        // Always show Admin as the first breadcrumb for all admin pages except the dashboard
+        $breadcrumbs[] = ['name' => 'Admin', 'url' => getRelativePath('admin/dashboard.php')];
+
+        if (strpos($currentPage, '/admin/users/') !== false) {
+            // Always add Users as a link to the list page, regardless of current page
+            $breadcrumbs[] = ['name' => 'Users', 'url' => getRelativePath('admin/users/list.php')];
+
+            if (strpos($currentPage, '/admin/users/list.php') !== false) {
+                $breadcrumbs[] = ['name' => 'List', 'url' => ''];
+            } elseif (strpos($currentPage, '/admin/users/create.php') !== false) {
+                $breadcrumbs[] = ['name' => 'Create', 'url' => ''];
+            } elseif (strpos($currentPage, '/admin/users/edit.php') !== false) {
+                $breadcrumbs[] = ['name' => 'Edit', 'url' => ''];
+            }
+        } elseif (strpos($currentPage, '/admin/roles/') !== false) {
+            // Always add Roles as a link to the list page, regardless of current page
+            $breadcrumbs[] = ['name' => 'Roles', 'url' => getRelativePath('admin/roles/list.php')];
+
+            if (strpos($currentPage, '/admin/roles/list.php') !== false) {
+                $breadcrumbs[] = ['name' => 'List', 'url' => ''];
+            } elseif (strpos($currentPage, '/admin/roles/create.php') !== false) {
+                $breadcrumbs[] = ['name' => 'Create', 'url' => ''];
+            } elseif (strpos($currentPage, '/admin/roles/edit.php') !== false) {
+                $breadcrumbs[] = ['name' => 'Edit', 'url' => ''];
+            }
+        } elseif (strpos($currentPage, '/admin/settings/') !== false) {
+            // Always add Settings as a link to the settings dashboard, regardless of current page
+            $breadcrumbs[] = ['name' => 'Settings', 'url' => getRelativePath('admin/settings/dashboard.php')];
+
+            if (strpos($currentPage, '/admin/settings/dashboard.php') !== false) {
+                $breadcrumbs[] = ['name' => 'Dashboard', 'url' => ''];
+            } elseif (strpos($currentPage, '/admin/settings/general.php') !== false) {
+                $breadcrumbs[] = ['name' => 'General', 'url' => ''];
+            } elseif (strpos($currentPage, '/admin/settings/email.php') !== false) {
+                $breadcrumbs[] = ['name' => 'Email', 'url' => ''];
+            } elseif (strpos($currentPage, '/admin/settings/security.php') !== false) {
+                $breadcrumbs[] = ['name' => 'Security', 'url' => ''];
+            }
+        }
+    } elseif (strpos($currentPage, '/auth/') !== false) {
+        // Always add Authentication as a link to the login page, regardless of current page
+        $breadcrumbs[] = ['name' => 'Authentication', 'url' => getRelativePath('auth/login.php')];
+        
+        if (strpos($currentPage, '/auth/login.php') !== false) {
+            $breadcrumbs[] = ['name' => 'Login', 'url' => ''];
+        } elseif (strpos($currentPage, '/auth/register.php') !== false) {
+            $breadcrumbs[] = ['name' => 'Register', 'url' => ''];
+        } elseif (strpos($currentPage, '/auth/forgot-password.php') !== false) {
+            $breadcrumbs[] = ['name' => 'Forgot Password', 'url' => ''];
+        }
+    } elseif (strpos($currentPage, '/clients/') !== false) {
+        // Don't show breadcrumbs on the main client dashboard
+        if (strpos($currentPage, '/clients/dashboard.php') !== false) {
+            return '';
+        }
+        
+        // Always add Client as a link to the client dashboard, regardless of current page
+        $breadcrumbs[] = ['name' => 'Client', 'url' => getRelativePath('clients/dashboard.php')];
+        
+        if (strpos($currentPage, '/clients/profile.php') !== false) {
+            $breadcrumbs[] = ['name' => 'Profile', 'url' => ''];
+        }
+    }
+    
+    // Add any additional breadcrumbs passed in
+    $breadcrumbs = array_merge($breadcrumbs, $additionalCrumbs);
+
+    // Generate the HTML
+    $html = '<nav aria-label="breadcrumb">';
+    $html .= '<ol class="breadcrumb">';
+
+    foreach ($breadcrumbs as $index => $crumb) {
+        $isActive = ($index === count($breadcrumbs) - 1 && empty($crumb['url']));
+        $html .= '<li class="breadcrumb-item ' . ($isActive ? 'active' : '') . '">';
+
+        if ($isActive) {
+            $html .= $crumb['name'];
+        } else {
+            $html .= '<a href="' . $crumb['url'] . '">' . $crumb['name'] . '</a>';
+        }
+
+        $html .= '</li>';
+    }
+
+    $html .= '</ol>';
+    $html .= '</nav>';
+
+    return $html;
 }

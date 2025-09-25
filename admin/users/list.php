@@ -35,7 +35,10 @@ ob_start();
     <div class="col-12">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h3>Manage Users</h3>
+                <div>
+                    <h3>Manage Users</h3>
+                    <?php echo generateBreadcrumbs(); ?>
+                </div>
             </div>
             <div class="card-body">
                 <?php if (empty($users)): ?>
