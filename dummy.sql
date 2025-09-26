@@ -1,3 +1,6 @@
+INSERT INTO `companies` (`id`, `company_name`, `company_number`, `enabled`, `primary_phone`) VALUES
+(1, 'Demo Company', 'DC001', 1, '555-123-4567');
+
 -- Insert users
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `role_id`, `is_active`, `activation_token`, `created_at`, `updated_at`) VALUES
 (1, 'Eric Young', 'youngeric@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 1, NULL, '2025-09-10 23:16:52', '2025-09-10 23:16:52'),

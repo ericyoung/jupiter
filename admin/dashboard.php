@@ -41,20 +41,29 @@ ob_start();
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="card bg-dark text-light h-100">
-                            <div class="card-body d-flex flex-column">
+                        <div class="card bg-dark text-light">
+                            <div class="card-body">
                                 <h5 class="card-title">Role Management</h5>
-                                <p class="card-text flex-grow-1">Create and manage user roles and hierarchies.</p>
-                                <a href="<?php echo getRelativePath('admin/roles/list.php'); ?>" class="btn btn-primary mt-auto">Manage Roles</a>
+                                <p class="card-text">Create and manage user roles and hierarchies.</p>
+                                <a href="<?php echo getRelativePath('admin/roles/list.php'); ?>" class="btn btn-primary">Manage Roles</a>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="card bg-dark text-light h-100">
-                            <div class="card-body d-flex flex-column">
+                        <div class="card bg-dark text-light">
+                            <div class="card-body">
+                                <h5 class="card-title">Company Management</h5>
+                                <p class="card-text">Manage companies and their associated users.</p>
+                                <a href="<?php echo getRelativePath('admin/companies/list.php'); ?>" class="btn btn-primary">Manage Companies</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-dark text-light">
+                            <div class="card-body">
                                 <h5 class="card-title">System Settings</h5>
-                                <p class="card-text flex-grow-1">Configure system-wide settings.</p>
-                                <a href="<?php echo getRelativePath('admin/settings/dashboard.php'); ?>" class="btn btn-primary mt-auto">Configure</a>
+                                <p class="card-text">Configure system-wide settings.</p>
+                                <a href="#" class="btn btn-primary">Configure</a>
                             </div>
                         </div>
                     </div>

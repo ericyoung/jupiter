@@ -93,6 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = sanitizeInput($_POST['name'] ?? '');
     $email = sanitizeInput($_POST['email'] ?? '');
     $roleName = $_POST['role'] ?? '';
+    $companyId = !empty($_POST['company_id']) ? (int)$_POST['company_id'] : null;
     $isActive = isset($_POST['is_active']) ? 1 : 0;
 
     // Validation
@@ -143,8 +144,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         try {
-            $stmt = $pdo->prepare("UPDATE users SET name = ?, email = ?, role_id = ?, is_active = ? WHERE id = ?");
-            $result = $stmt->execute([$name, $email, $roleId, $isActive, $userId]);
+            $stmt = $pdo->prepare("UPDATE users SET name = ?, email = ?, role_id = ?, company_id = ?, is_active = ? WHERE id = ?");
+            $result = $stmt->execute([$name, $email, $roleId, $companyId, $isActive, $userId]);
 
             if ($result) {
                     // If the current user is editing their own profile, update session data
@@ -217,17 +218,32 @@ ob_start();
                             $roles = $rolesStmt->fetchAll();
                             foreach ($roles as $role_option):
                             ?>
-                                <option value="<?php echo htmlspecialchars($role_option['name']); ?>"
+                                <option value="<?php echo htmlspecialchars($role_option['name']); ?>" 
                                     <?php echo $user['role'] === $role_option['name'] ? 'selected' : ''; ?>>
                                     <?php echo htmlspecialchars($role_option['display_name']); ?>
-                                    <?php if ($role_option['is_client_role']): ?>
-                                        (Client Role)
-                                    <?php else: ?>
-                                        (Admin Role)
-                                    <?php endif; ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
+                        <div class="form-text">Select the user's role and permissions.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="company_id" class="form-label">Company</label>
+                        <select class="form-control" id="company_id" name="company_id">
+                            <option value="">None (Independent User)</option>
+                            <?php
+                            // Get all companies for selection
+                            $companiesStmt = $pdo->query("SELECT id, company_name FROM companies WHERE enabled = 1 ORDER BY company_name ASC");
+                            $companies = $companiesStmt->fetchAll();
+                            foreach ($companies as $company_option):
+                            ?>
+                                <option value="<?php echo htmlspecialchars($company_option['id']); ?>" 
+                                    <?php echo ((int)$user['company_id'] === (int)$company_option['id']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($company_option['company_name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <div class="form-text">Associate this user with a company. When assigned, the user becomes a client.</div>
                     </div>
 
                     <div class="mb-3 form-check">

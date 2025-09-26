@@ -27,9 +27,9 @@ if (!in_array($userRole, $allowedRoles)) {
     exit;
 }
 
-// Get all users from the database with role information
+// Get all users from the database with role and company information
 global $pdo;
-$stmt = $pdo->query("SELECT u.id, u.name, u.email, u.role_id, r.name as role, r.display_name, u.is_active, u.created_at FROM users u LEFT JOIN roles r ON u.role_id = r.id ORDER BY u.created_at DESC");
+$stmt = $pdo->query("SELECT u.id, u.name, u.email, u.role_id, r.name as role, r.display_name, u.company_id, c.company_name, u.is_active, u.created_at FROM users u LEFT JOIN roles r ON u.role_id = r.id LEFT JOIN companies c ON u.company_id = c.id ORDER BY u.created_at DESC");
 $users = $stmt->fetchAll();
 
 $title = "Manage Users - " . SITE_NAME;
@@ -56,6 +56,7 @@ ob_start();
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Role</th>
+                                <th>Company</th>
                                 <th>Status</th>
                                 <th>Created</th>
                                 <th>Actions</th>
@@ -71,6 +72,13 @@ ob_start();
                                     <span class="badge bg-<?php echo in_array($user['role'], ['superadmin', 'executive', 'accounts']) ? 'primary' : 'secondary'; ?>">
                                         <?php echo htmlspecialchars($user['role']); ?>
                                     </span>
+                                </td>
+                                <td>
+                                    <?php if (!empty($user['company_name'])): ?>
+                                        <span class="badge bg-info"><?php echo htmlspecialchars($user['company_name']); ?></span>
+                                    <?php else: ?>
+                                        <span class="text-muted">None</span>
+                                    <?php endif; ?>
                                 </td>
                                 <td>
                                     <?php if ($user['is_active']): ?>
