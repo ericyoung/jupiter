@@ -14,6 +14,8 @@ if (isClient()) {
     exit;
 }
 
+setCustomBreadcrumbs([]);
+
 $title = "Admin Dashboard - " . SITE_NAME;
 ob_start();
 ?>

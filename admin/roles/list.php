@@ -14,6 +14,11 @@ if (!isSuperAdmin()) {
     exit;
 }
 
+setCustomBreadcrumbs([
+    ['name' => 'Dashboard', 'url' => getRelativePath('admin/dashboard.php')],
+    ['name' => 'Roles', 'url' => '']
+]);
+
 // Get all roles
 $roles = getAllRoles();
 

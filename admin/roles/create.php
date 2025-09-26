@@ -16,7 +16,8 @@ if (!isSuperAdmin()) {
 
 setCustomBreadcrumbs([
     ['name' => 'Dashboard', 'url' => getRelativePath('admin/dashboard.php')],
-    ['name' => 'Roles', 'url' => '']
+    ['name' => 'Roles', 'url' => getRelativePath('admin/roles/list.php')],
+    ['name' => 'Create', 'url' => '']
 ]);
 
 $message = '';

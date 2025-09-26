@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $email = sanitizeInput($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
         $confirmPassword = $_POST['confirm_password'] ?? '';
-        
+
         // Validation
         if (empty($name) || empty($email) || empty($password) || empty($confirmPassword)) {
             setFlash('error', 'Please fill in all fields.');
@@ -29,11 +29,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($existingUser && !$existingUser['is_active']) {
                 // User exists but is not confirmed, send confirmation again
                 $token = generateToken();
-                
+
                 global $pdo;
                 $stmt = $pdo->prepare("UPDATE users SET activation_token = ? WHERE email = ?");
                 $result = $stmt->execute([$token, $email]);
-                
+
                 if ($result) {
                     sendConfirmationEmail($email, $existingUser['name'], $token);
                     setFlash('success', 'Account already exists but not confirmed. A new confirmation email has been sent to your email address.');
@@ -64,7 +64,6 @@ ob_start();
         <div class="card">
             <div class="card-header">
                 <h3 class="text-center">Register</h3>
-                <?php echo generateBreadcrumbs(); ?>
             </div>
             <div class="card-body">
                 <form method="POST">
@@ -89,7 +88,7 @@ ob_start();
                         <button type="submit" class="btn btn-primary">Register</button>
                     </div>
                 </form>
-                
+
                 <div class="text-center mt-3">
                     <p>Already have an account? <a href="<?php echo getRelativePath('auth/login.php'); ?>">Login here</a></p>
                 </div>

@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $email = sanitizeInput($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
-        
+
         // Validation
         if (empty($email) || empty($password)) {
             setFlash('error', 'Please fill in all fields.');
@@ -45,7 +45,6 @@ ob_start();
         <div class="card">
             <div class="card-header">
                 <h3 class="text-center">Login</h3>
-                <?php echo generateBreadcrumbs(); ?>
             </div>
             <div class="card-body">
                 <form method="POST">
@@ -62,7 +61,7 @@ ob_start();
                         <button type="submit" class="btn btn-primary">Login</button>
                     </div>
                 </form>
-                
+
                 <div class="text-center mt-3">
                     <p><a href="forgot-password.php">Forgot Password?</a></p>
                     <p>Don't have an account? <a href="<?php echo getRelativePath('auth/register.php'); ?>">Register here</a></p>
