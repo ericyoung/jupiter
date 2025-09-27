@@ -64,6 +64,7 @@ ob_start();
                                 <h5 class="card-title">Order Management</h5>
                                 <p class="card-text flex-grow-1">Create and manage audio/video orders.</p>
                                 <a href="<?php echo getRelativePath('admin/orders/create.php'); ?>" class="btn btn-primary mt-auto w-100">Create Order</a>
+                                <a href="<?php echo getRelativePath('admin/orders/list.php'); ?>" class="btn btn-outline-primary mt-auto w-100 mt-2">View Orders</a>
                             </div>
                         </div>
                     </div>

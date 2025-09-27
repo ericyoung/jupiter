@@ -115,18 +115,15 @@ ob_start();
     <div class="col-12">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h3>Audio/Video Order Form</h3>
-                <div>
-                    <?php if (!$isClient): ?>
-                        <button type="button" class="btn btn-info me-2" onclick="loadCompanyInfo()">Load Company</button>
-                        <button type="button" class="btn btn-info me-2" onclick="loadUserInfo()">Load User</button>
-                        <?php if (!$tourId): ?>
+                    <h3>Audio/Video Order Form</h3>
+                    <div>
+                        <?php if (!$isClient && !$tourId): ?>
                             <button type="button" class="btn btn-info me-2" onclick="loadTourInfo()">Load Tour</button>
                         <?php endif; ?>
-                    <?php endif; ?>
-                    <button type="submit" form="av-order-form" class="btn btn-primary">Save Order</button>
+                        <button type="submit" form="av-order-form" class="btn btn-primary">Save Order</button>
+                        <a href="../create.php" class="btn btn-danger ms-2">Start Over</a>
+                    </div>
                 </div>
-            </div>
             <div class="card-body">
                 <form id="av-order-form" method="POST">
                     <!-- Hidden fields -->
@@ -182,6 +179,17 @@ ob_start();
                     <?php endif; ?>
                     <?php endif; ?>
 
+                    <?php 
+                    // Show client information if company and user are provided
+                    if ($companyId && $userInfo): 
+                    ?>
+                    <div class="alert alert-info">
+                        <strong>Client Info Loaded:</strong> 
+                        Company: <?php echo htmlspecialchars($companyInfo['company_name'] ?? ''); ?>, 
+                        User: <?php echo htmlspecialchars($userInfo['name'] ?? ''); ?>
+                    </div>
+                    <?php endif; ?>
+                    
                     <?php if ($tourId): ?>
                     <div class="alert alert-info">
                         <strong>Tour Information Loaded:</strong> 
@@ -199,12 +207,21 @@ ob_start();
                             </div>
                             <div class="mb-3">
                                 <label for="promoter_phone" class="form-label">Phone Number</label>
-                                <input type="text" class="form-control" id="promoter_phone" name="promoter_phone" value="<?php echo htmlspecialchars($userInfo['phone'] ?? ''); ?>" onchange="formatPhoneNumber('promoter_phone')">
+                                <input type="text" class="form-control" id="promoter_phone" name="promoter_phone" value="<?php echo htmlspecialchars($userInfo['phone'] ?? ''); ?>" maxlength="14" oninput="formatPhoneNumberInput('promoter_phone')" onchange="formatPhoneNumber('promoter_phone')">
                                 <div class="form-text">Format: (###) ###-####</div>
                             </div>
                             <div class="mb-3">
                                 <label for="promoter_phone_ext" class="form-label">Phone Extension</label>
                                 <input type="text" class="form-control" id="promoter_phone_ext" name="promoter_phone_ext" value="<?php echo htmlspecialchars($userInfo['phone_ext'] ?? ''); ?>">
+                            </div>
+                            <div class="mb-3">
+                                <label for="promoter_alt_phone" class="form-label">Alternate Phone Number</label>
+                                <input type="text" class="form-control" id="promoter_alt_phone" name="promoter_alt_phone" value="<?php echo htmlspecialchars($userInfo['alt_phone'] ?? ''); ?>" maxlength="14" oninput="formatPhoneNumberInput('promoter_alt_phone')" onchange="formatPhoneNumber('promoter_alt_phone')">
+                                <div class="form-text">Format: (###) ###-####</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="promoter_alt_phone_ext" class="form-label">Alternative Phone Number Extension</label>
+                                <input type="text" class="form-control" id="promoter_alt_phone_ext" name="promoter_alt_phone_ext" value="<?php echo htmlspecialchars($userInfo['alt_phone_ext'] ?? ''); ?>">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -781,6 +798,53 @@ ob_start();
         });
         if (videoRushCheckbox) videoRushCheckbox.addEventListener('change', updateInvoiceCost);
     });
+
+    // Phone number formatting functions
+    function formatPhoneNumberInput(fieldId) {
+        const input = document.getElementById(fieldId);
+        let value = input.value.replace(/\D/g, ''); // Remove all non-digit characters
+        
+        // Limit to 10 digits
+        if (value.length > 10) {
+            value = value.substring(0, 10);
+        }
+        
+        // Format as (###) ###-####
+        if (value.length >= 6) {
+            value = '(' + value.substring(0, 3) + ') ' + value.substring(3, 6) + '-' + value.substring(6, 10);
+        } else if (value.length >= 3) {
+            value = '(' + value.substring(0, 3) + ') ' + value.substring(3);
+        } else if (value.length > 0) {
+            value = '(' + value;
+        }
+        
+        input.value = value;
+    }
+    
+    function formatPhoneNumber(fieldId) {
+        const input = document.getElementById(fieldId);
+        let value = input.value.replace(/\D/g, ''); // Remove all non-digit characters
+        
+        // If empty, leave as is
+        if (value === '') {
+            return;
+        }
+        
+        // Limit to 10 digits
+        if (value.length > 10) {
+            value = value.substring(0, 10);
+        }
+        
+        // Pad with zeros if less than 10 digits
+        while (value.length < 10) {
+            value = '0' + value;
+        }
+        
+        // Format as (###) ###-####
+        value = '(' + value.substring(0, 3) + ') ' + value.substring(3, 6) + '-' + value.substring(6, 10);
+        
+        input.value = value;
+    }
 
     // Venue and market autocomplete functionality
     document.addEventListener('input', function(e) {
