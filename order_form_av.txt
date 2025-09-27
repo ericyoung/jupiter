@@ -1,0 +1,104 @@
+There are multiple ways for an admin (role of superadmin or accounts only) to start a new order. from the tours page, if the user has the right role, they'll see two buttons: "Start New Audio/Video Order" and "Start New Static/Motion Order". if the user clicks start new audio/video order button, user will be taken to new av order form page (admin/orders/av/create?tour_id=z). that's one way to start. Another way, is to go to the admin/orders/create manually, where the user can select a company from a dropdown, a user from that company's users in the next dropdown, followed by a tour text input (autocomplete, can select only one). Once those three inputs are filled out, the user will be prompted "Start a new order for X company, Y user, and Z tour?" if chooses yes, redirect to admin/orders/av/create?company_id=x&user_id=y&tour_id=z. Once the user fills out the order for correctly and the save succeeds, the user will redirect to the edit page where the order loads into the page and user can see a Lock button at the top that allows the order to become locked and can only be unlocked by that user. So we'll need a locked tinyint field added to order_av.
+
+
+This document is specific to the Audio video order form.
+
+*** if the user is a client, use the company_id stored in session, then load the company info from the companies table into this form. redirect to error if company is disabled with message that Company is not allowed to create new orders. otherwise, write company_id to hidden form field.
+*** if the user is an admin with role of superadmin or accounts, then provide a companies dropdown at the top of the form. once selected, another dropdown shows for all the users associated with that company. when a company is selected, populate the appropriate fields on the form with company data, including company_id. when a user is selected, populate the appropriate fields with the user's data, including user_id. Anytime the company dropdown or user dropdown is changed, the company and user fields must also change to reflect the new selections. Also add a tour autocomplete text input that, when a tour is selected (only one) the tours information is populated in the relevant form fields. if tour_id is in the url, then use that instead and don't show a tour autocomplete field.
+*** we will take the user_id stored in session after login and use it to populate the fields in the form. We will need to add some new fields to the users table. User must be is_active=1 or redirect with error saying User is not allowed to create new orders. write user_id to hidden form field.
+*** if tour_id is in the url, then load from tours table where active=1, prepopulate inputs tour_id, headliner, support, intro_line, outro_line, and produced_by if not empty.
+
+Variables (load from settings page):
+
+
+hide_toast: false
+invoice_cost: 0.00
+audio_rush_order: 125.00
+video_rush_order: 150.00
+
+For calculating invoice cost, recalculate all selections on the invoice page when something changes and then populate the label at the bottom of the page for invoice cost. This should be a toast option that can be closed if hide_toast = true.
+
+0. Hidden fields div: (this content area is not visible)
+	a. company_id (hidden) (from companies.id) [company_id]
+	b. user_id (hidden) (from users.id) [user_id]
+	c. account_rep_id (hidden) (from users.account_rep_id) [account_rep_id]
+	d. tour_id (hidden) (from tours.id if tours.active=1) [tour_id]
+
+1. Promoter Information (these are content area headers, not actual fields)
+	a. Promoter full name (from users.name) (text)
+	b. Phone number (js format of (###) ###-####) (from users.phone) (text)
+	c. Phone extension  (from users.phone_ext) (text)
+	d. Alternate phone number (js format of (###) ###-####) (from users.alt_phone) (text)
+	e. Alternative phone number extension (from users.alt_phone_ext) (text)
+	f. Promoter email (from users.email) (email)
+	g. Promoter company name (from companies.company_name) (text)
+
+2. Order Details
+	a. Purchase order # (text) [order_details_purchase_order_number]
+	b. ORDER SPOT(S) (h5)
+	c. Today’s Date (span)
+	d. Show today’s date as span
+	e. Audio Order (checkbox) [order_details_audio_order]
+	f. “RUSH ORDER ($125)” (text in red) (checkbox) can only be clicked if Audio Order checked. Adds/removes audio_rush_order to invoice_cost when changed. [order_details_audio_order_rush]
+	g. Audio must be received by (date picker) [order_details_audio_received_by]
+	h. Do not ship audio spots without approval (checkbox) [order_details_audio_order_requires_approval]
+	i. Video Order (checkbox) [order_details_video_order]
+	j. “RUSH ORDER ($150)” (text in red) (checkbox) can only be clicked if Video Order checked. Adds/removes video_rush_order to invoice_cost when changed. [order_details_video_order_rush]
+	k. Video must be received by (date picker) [order_details_video_order_received_by]
+	l. Do not ship video spots without approval (checkbox) [order_details_video_order_requires_approval]
+
+3. Event Information
+	a. Tour/Event/headliner (textarea) (required). Should be filled in based on tour loaded from tour_id in url [event_info_headliner]
+	b. Support (textarea) Should be filled in based on tour loaded from tour_id in url [event_info_support]
+	c. Venue (text) (required) should be an autocomplete of all the stored venues in the orders table. [event_info_venue]
+	d. “NOTE: we will only say market if its written in the Venue Section” (h5)
+	e. Mention “The” in Venue Name? (Checkbox) default: unchecked [event_info_mention_the]
+	f. City/Market (text) (required) autocomplete all cities in the database [event_info_market]
+	g. Date (date picker) (required)  [event_info_date]
+	h. Time/s (text) [event_info_times]
+	I. “NOTE: We only mention Fri/Sat in spots unless otherwise requested.” (h5)
+	j. Add Additional Dates (this is a repeater of the Date and Time/s fields above, only additional dates are not required. Each new Date/Time div incudes a remove button to remove it from the submitted data upon save. Save as field titled additional_dates and same as json where each array item is saved as date and time elements. [event_info_additional_dates]
+	k. “Custom string of dates<br>Type residency or other custom dates” (div) (textarea) (add placeholder “Example: Two shows every Friday in July, at 5pm and 8pm”) [event_info_custom_dates_string]
+
+4. Local Copy
+	a. Intro Line (textarea)  [local_copy_intro_line]
+	b. Outro Line (textarea)  [local_copy_outro_line]
+	c. Produced By (textarea)  [local_copy_produced_by]
+	d. “NOTE: Please type out exactly how you want your station mentioned. If you include a “.” (Point) in the station ID, the word “Point: will be said.” (H5)
+	e. Audio ID(s) (textarea) [local_copy_audio_ids]
+	f. Video ID(s) (textarea) [local_copy_video_ids]
+	g. List all logos required (send to AE) (text) [local_copy_list_all_logos]
+
+5. Ticket Information
+	a. On Sale Day/Time (text) (hint: Only list date if required. Otherwise, only date and time will be mentioned in pre-sale spot.) [ticket_info_on_sale_day_time]
+	b. Mention Reserved Seats (checkbox) default: unchecked [ticket_info_mention_reserved_seats]
+	c. “NOTE: :30, :15, :10 spots have limited time for ticket information” (h5)
+	d. Ticket Information/Locations (textarea) [ticket_info_locations]
+
+6. Spot Information
+	a. “NOTE: :10 and :15 spots may not be available for all tours” (h5)
+	b. “At least one spot must be selected” (h5)
+	c. AUDIO (h5)
+	d. Presale (has four checkboxes on the same row with text inside of 60, 30, 15, and 10. Field names are: [spot_info_audio_presale_60], [spot_info_audio_presale_30],  [spot_info_audio_presale_15],  [spot_info_audio_presale_10]
+	e. On Sale Now (has four checkboxes on the same row with text inside of 60, 30, 15, and 10. Field names are: [spot_info_audio_on_sale_now_60], [spot_info_audio_on_sale_now_30],  [spot_info_audio_on_sale_now_15],  [spot_info_audio_on_sale_now_10]
+	f. Week Of (has four checkboxes on the same row with text inside of 60, 30, 15, and 10. Field names are: [spot_info_audio_week_of_60], [spot_info_audio_week_of_30],  [spot_info_audio_week_of_15],  [spot_info_audio_week_of_10]
+	g. Day Prior (has four checkboxes on the same row with text inside of 60, 30, 15, and 10. Field names are: [spot_info_audio_day_prior_60], [spot_info_audio_day_prior_30],  [spot_info_audio_day_prior_15],  [spot_info_audio_day_prior_10]
+	h. Day Of (has four checkboxes on the same row with text inside of 60, 30, 15, and 10. Field names are: [spot_info_audio_day_of_60], [spot_info_audio_day_of_30],  [spot_info_audio_day_of_15],  [spot_info_audio_day_of_10]
+	I. VIDEO (h5)
+	j. Presale (has three checkboxes on the same row with text inside of 30, 15, and 10. Field names are: [spot_info_video_presale_30], [spot_info_video_presale_15],  [spot_info_video_presale_10]
+	k. On Sale Now (has three checkboxes on the same row with text inside of 30, 15, and 10. Field names are: [spot_info_video_on_sale_now_30], [spot_info_video_on_sale_now_15],  [spot_info_video_on_sale_now_10]
+	l. Week Of (has three checkboxes on the same row with text inside of 30, 15, and 10. Field names are: [spot_info_video_week_of_30], [spot_info_video_week_of_15],  [spot_info_video_week_of_10]	m. Day Prior (has three checkboxes on the same row with text inside of 30, 15, and 10. Field names are: [spot_info_video_day_prior_30], [spot_info_video_day_prior_15],  [spot_info_video_day_prior_10]
+	n. Day Of (has three checkboxes on the same row with text inside of 30, 15, and 10. Field names are: [spot_info_video_day_of_30], [spot_info_video_day_of_15],  [spot_info_video_day_of_10]
+	o. “Custom ISCI code, if required (must be limited to 13 characters)” (text) (maximum of 13 characters in length)
+
+7. Special Instructions
+	a. “NOTE: Pronunciations are your responsibility! If there is a doubt, please provide guidance.” (h5)
+	b. [special_instructions] (textarea) *do not need to show a label for this field*
+
+For now, stop here. We will work on shipping section later. Ignore all text below this line.
+
+8. Shipping
+	a. “AUDIO DELIVERY<br>All Audio sent via PDQ for client to distribute” (h5)
+	b. Emails (texarea) [shipping_emails_for_pdq] Repopulate this field with the email from the promoter defined in Promoter Information above (hint: Additional emails can be added.)
+	c. “All cuts ordered will be delivered via your chosen delivery method unless otherwise stated in special instructions.” (h5)
+	d. VIDEO DELIVERY OPTIONS (h5)

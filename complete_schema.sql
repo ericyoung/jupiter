@@ -54,7 +54,12 @@ CREATE TABLE `users` (
   `password` varchar(255) NOT NULL,
   `role_id` int NOT NULL,
   `company_id` int NULL,
-  `is_active` tinyint(1) DEFAULT '0',
+  `phone` varchar(20) DEFAULT NULL,
+  `phone_ext` varchar(10) DEFAULT NULL,
+  `alt_phone` varchar(20) DEFAULT NULL,
+  `alt_phone_ext` varchar(10) DEFAULT NULL,
+  `account_rep_id` int DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT 1,
   `activation_token` varchar(100) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -66,38 +71,6 @@ CREATE TABLE `users` (
   CONSTRAINT `users_ibfk_2` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Set auto-increment values
-ALTER TABLE `companies`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
-ALTER TABLE `roles`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
-
-ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
--- Insert default roles with hierarchy
-INSERT INTO `roles` (`id`, `name`, `display_name`, `is_client_role`, `hierarchy_level`, `description`) VALUES
-(1, 'superadmin', 'Super Administrator', 0, 100, 'Super Administrator with highest privileges'),
-(2, 'executive', 'Executive', 0, 90, 'Executive role with high privileges'),
-(3, 'accounts', 'Accounts', 0, 80, 'Accounts role for financial management'),
-(4, 'audio', 'Audio', 0, 50, 'Audio department role'),
-(5, 'video', 'Video', 0, 50, 'Video department role'),
-(6, 'graphics', 'Graphics', 0, 50, 'Graphics department role'),
-(7, 'dubbing', 'Dubbing', 0, 40, 'Dubbing department role'),
-(8, 'client_admin', 'Client Administrator', 1, 10, 'Client Administrator with elevated client privileges'),
-(9, 'client', 'Client', 1, 5, 'Basic client role');
-
--- Insert default companies
-INSERT INTO `companies` (`id`, `company_name`, `company_number`, `enabled`, `primary_phone`) VALUES
-(1, 'Demo Company', 'DC001', 1, '555-123-4567');
-
--- Insert default users
-INSERT INTO `users` (`id`, `name`, `email`, `password`, `role_id`, `company_id`, `is_active`, `activation_token`, `created_at`, `updated_at`) VALUES
-(1, 'Eric Young', 'youngeric@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, NULL, 1, NULL, '2025-09-10 23:16:52', '2025-09-10 23:16:52'),
-(2, 'Barry Leff', 'barry@beaver.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 9, 1, 1, NULL, '2025-09-10 23:16:52', '2025-09-10 23:16:52'),
-(3, 'Super Admin', 'superadmin@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, NULL, 1, NULL, '2025-09-10 23:18:05', '2025-09-10 23:18:05'),
-(4, 'Client User', 'client@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 9, 1, 1, NULL, '2025-09-10 23:18:05', '2025-09-10 23:18:05');
 
 -- Table structure for audits with auto-increment starting at 1
 CREATE TABLE `audits` (
@@ -113,4 +86,62 @@ CREATE TABLE `audits` (
   CONSTRAINT `audits_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+/* Table structure for orders_av */
+CREATE TABLE `orders_av` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `locked` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+/* Table structure for orders_sm */
+CREATE TABLE `orders_sm` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+/* Table structure for orders with auto-increment starting at 1 */
+CREATE TABLE `orders` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `order_number` varchar(255) NOT NULL,
+  `av_order_id` int NULL,
+  `sm_order_id` int NULL,
+  `revised_from_order_id` int NULL,
+  `company_id` int NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `order_number` (`order_number`),
+  KEY `av_order_id` (`av_order_id`),
+  KEY `sm_order_id` (`sm_order_id`),
+  KEY `revised_from_order_id` (`revised_from_order_id`),
+  KEY `company_id` (`company_id`),
+  CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`av_order_id`) REFERENCES `orders_av` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`sm_order_id`) REFERENCES `orders_sm` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `orders_ibfk_3` FOREIGN KEY (`revised_from_order_id`) REFERENCES `orders` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `orders_ibfk_4` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+/* Table structure for tours with auto-increment starting at 1 */
+CREATE TABLE `tours` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `headliner` text NOT NULL,
+  `support` text,
+  `intro_line` text,
+  `outro_line` text,
+  `produced_by` text,
+  `active` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 COMMIT;
+
+-- ALTER statements for existing databases
+-- Add active field to tours table if it doesn't exist
+-- This will ensure that databases created before this field was added will have it
+ALTER TABLE `tours` ADD COLUMN `active` tinyint(1) DEFAULT 1 AFTER `produced_by`;

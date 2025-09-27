@@ -34,36 +34,45 @@ ob_start();
                     <div class="col-md-4">
                         <div class="card bg-dark text-light h-100">
                             <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">Company Management</h5>
+                                <p class="card-text flex-grow-1">Manage company records and associations.</p>
+                                <a href="<?php echo getRelativePath('admin/companies/list.php'); ?>" class="btn btn-primary mt-auto w-100">Manage Companies</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-dark text-light h-100">
+                            <div class="card-body d-flex flex-column">
                                 <h5 class="card-title">User Management</h5>
                                 <p class="card-text flex-grow-1">Manage users, roles, and permissions.</p>
-                                <a href="<?php echo getRelativePath('admin/users/list.php'); ?>" class="btn btn-primary mt-auto">Manage Users</a>
+                                <a href="<?php echo getRelativePath('admin/users/list.php'); ?>" class="btn btn-primary mt-auto w-100">Manage Users</a>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="card bg-dark text-light">
-                            <div class="card-body">
-                                <h5 class="card-title">Role Management</h5>
-                                <p class="card-text">Create and manage user roles and hierarchies.</p>
-                                <a href="<?php echo getRelativePath('admin/roles/list.php'); ?>" class="btn btn-primary">Manage Roles</a>
+                        <div class="card bg-dark text-light h-100">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">Tour Management</h5>
+                                <p class="card-text flex-grow-1">Manage tour information and orders.</p>
+                                <a href="<?php echo getRelativePath('admin/tours/list.php'); ?>" class="btn btn-primary mt-auto w-100">Manage Tours</a>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="card bg-dark text-light">
-                            <div class="card-body">
-                                <h5 class="card-title">Company Management</h5>
-                                <p class="card-text">Manage companies and their associated users.</p>
-                                <a href="<?php echo getRelativePath('admin/companies/list.php'); ?>" class="btn btn-primary">Manage Companies</a>
+                        <div class="card bg-dark text-light h-100">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">Order Management</h5>
+                                <p class="card-text flex-grow-1">Create and manage audio/video orders.</p>
+                                <a href="<?php echo getRelativePath('admin/orders/create.php'); ?>" class="btn btn-primary mt-auto w-100">Create Order</a>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="card bg-dark text-light">
-                            <div class="card-body">
+                        <div class="card bg-dark text-light h-100">
+                            <div class="card-body d-flex flex-column">
                                 <h5 class="card-title">System Settings</h5>
-                                <p class="card-text">Configure system-wide settings.</p>
-                                <a href="#" class="btn btn-primary">Configure</a>
+                                <p class="card-text flex-grow-1">Configure system-wide settings.</p>
+                                <a href="<?php echo getRelativePath('admin/settings/dashboard.php'); ?>" class="btn btn-primary mt-auto w-100">Configure</a>
                             </div>
                         </div>
                     </div>
@@ -72,7 +81,7 @@ ob_start();
                             <div class="card-body d-flex flex-column">
                                 <h5 class="card-title">Audit Logs</h5>
                                 <p class="card-text flex-grow-1">View system activity and user actions.</p>
-                                <a href="<?php echo getRelativePath('admin/audits.php'); ?>" class="btn btn-primary mt-auto">View Logs</a>
+                                <a href="<?php echo getRelativePath('admin/audits.php'); ?>" class="btn btn-primary mt-auto w-100">View Logs</a>
                             </div>
                         </div>
                     </div>

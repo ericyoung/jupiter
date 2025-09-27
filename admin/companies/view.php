@@ -42,8 +42,8 @@ if (!$company) {
     exit;
 }
 
-// Get users associated with this company
-$stmt = $pdo->prepare("SELECT u.id, u.name, u.email, u.role, u.is_active, u.created_at FROM users u WHERE u.company_id = ? ORDER BY u.created_at DESC");
+// Get users associated with this company, including role information
+$stmt = $pdo->prepare("SELECT u.id, u.name, u.email, u.role_id, r.name as role, u.is_active, u.created_at FROM users u LEFT JOIN roles r ON u.role_id = r.id WHERE u.company_id = ? ORDER BY u.created_at DESC");
 $stmt->execute([$companyId]);
 $users = $stmt->fetchAll();
 
@@ -62,7 +62,7 @@ ob_start();
     <div class="col-md-8">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h3><?php echo htmlspecialchars($company['name']); ?></h3>
+                <h3><?php echo htmlspecialchars($company['company_name']); ?></h3>
                 <div>
                     <a href="edit.php?id=<?php echo urlencode($company['id']); ?>" class="btn btn-sm btn-primary">Edit</a>
                     <a href="delete.php?id=<?php echo urlencode($company['id']); ?>" class="btn btn-sm btn-danger" 
@@ -156,7 +156,7 @@ ob_start();
                 </div>
                 <div class="d-flex justify-content-between align-items-center">
                     <span>Status:</span>
-                    <span><?php echo $company['is_active'] ? 'Active' : 'Inactive'; ?></span>
+                    <span><?php echo $company['enabled'] ? 'Active' : 'Inactive'; ?></span>
                 </div>
             </div>
         </div>

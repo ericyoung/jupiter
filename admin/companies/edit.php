@@ -113,17 +113,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // If form was submitted with errors, use POST data; otherwise use DB data
-$name = htmlspecialchars($_POST['name'] ?? $company['company_name']);
-$contact_name = htmlspecialchars($_POST['contact_name'] ?? $company['contact_name']);
-$address1 = htmlspecialchars($_POST['address'] ?? $company['address1']);
-$city = htmlspecialchars($_POST['city'] ?? $company['city']);
-$state = htmlspecialchars($_POST['state'] ?? $company['state_or_province']);
-$zip_code = htmlspecialchars($_POST['zip_code'] ?? $company['zip']);
+$name = htmlspecialchars($_POST['name'] ?? $company['company_name'] ?? '');
+$contact_name = htmlspecialchars($_POST['contact_name'] ?? $company['contact_name'] ?? '');
+$address1 = htmlspecialchars($_POST['address'] ?? $company['address1'] ?? '');
+$city = htmlspecialchars($_POST['city'] ?? $company['city'] ?? '');
+$state = htmlspecialchars($_POST['state'] ?? $company['state_or_province'] ?? '');
+$zip_code = htmlspecialchars($_POST['zip_code'] ?? $company['zip'] ?? '');
 $country = htmlspecialchars($_POST['country'] ?? $company['country'] ?? 'US');
-$phone = htmlspecialchars($_POST['phone'] ?? $company['primary_phone']);
-$email = htmlspecialchars($_POST['email'] ?? $company['contact_email']);
-$contact_email = htmlspecialchars($_POST['contact_email'] ?? $company['contact_email']);
-$contact_phone = htmlspecialchars($_POST['contact_phone'] ?? $company['contact_phone']);
+$phone = htmlspecialchars($_POST['phone'] ?? $company['primary_phone'] ?? '');
+$email = htmlspecialchars($_POST['email'] ?? $company['contact_email'] ?? '');
+$contact_email = htmlspecialchars($_POST['contact_email'] ?? $company['contact_email'] ?? '');
+$contact_phone = htmlspecialchars($_POST['contact_phone'] ?? $company['contact_phone'] ?? '');
 $is_active = isset($_POST['is_active']) ? 1 : (int)$company['enabled'];
 
 $csrf_token = generateCSRFToken();
@@ -143,7 +143,7 @@ ob_start();
     <div class="col-md-8">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h3>Edit Company: <?php echo htmlspecialchars($company['name']); ?></h3>
+                <h3>Edit Company: <?php echo htmlspecialchars($company['company_name']); ?></h3>
                 <a href="view.php?id=<?php echo urlencode($company['id']); ?>" class="btn btn-sm btn-info">View Details</a>
             </div>
             <div class="card-body">
