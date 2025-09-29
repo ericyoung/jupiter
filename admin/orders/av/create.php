@@ -111,19 +111,103 @@ $title = "Audio/Video Order Form - " . SITE_NAME;
 ob_start();
 ?>
 
+<style>
+.custom-checkbox-container {
+    position: relative;
+    display: inline-block;
+    min-width: 40px; /* Fixed width to ensure alignment */
+}
+
+.custom-checkbox-input {
+    opacity: 0;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.custom-checkbox-label {
+    display: inline-block;
+    padding: 4px 10px; /* Smaller padding */
+    background-color: #dcdcdc; /* Darker checkbox background */
+    border: 1.5px solid #adb5bd; /* Original border */
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    font-weight: 600; /* Bolder font for better visibility */
+    min-width: 30px;
+    text-align: center;
+    user-select: none;
+    position: relative;
+    z-index: 1;
+    line-height: 1.2;
+    font-size: 0.9rem; /* Smaller font */
+    color: #212529; /* Darker text color for better visibility */
+    width: 100%; /* Make sure all labels have the same width */
+    box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.custom-checkbox-input:checked + .custom-checkbox-label {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.custom-checkbox-input:focus + .custom-checkbox-label {
+    outline: 2px solid rgba(13, 110, 253, 0.5);
+    outline-offset: 2px;
+}
+
+.custom-checkbox-label:hover {
+    background-color: #cccccc; /* Slightly darker on hover to show state */
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.1);
+}
+</style>
+
 <div class="row">
     <div class="col-12">
-        <div class="card">
+        <!-- Client Information Section -->
+        <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3>Audio/Video Order Form</h3>
-                    <div>
-                        <?php if (!$isClient && !$tourId): ?>
-                            <button type="button" class="btn btn-info me-2" onclick="loadTourInfo()">Load Tour</button>
-                        <?php endif; ?>
-                        <button type="submit" form="av-order-form" class="btn btn-primary">Save Order</button>
-                        <a href="../create.php" class="btn btn-danger ms-2">Start Over</a>
-                    </div>
+                <h4>Client Information</h4>
+                <div>
+                    <?php if (!$isClient && !$tourId): ?>
+                        <button type="button" class="btn btn-info me-2" onclick="loadTourInfo()">Load Tour</button>
+                    <?php endif; ?>
+                    <button type="submit" form="av-order-form" class="btn btn-primary">Save Order</button>
+                    <a href="../create.php" class="btn btn-danger ms-2">Start Over</a>
                 </div>
+            </div>
+            <div class="card-body">
+                <?php 
+                // Show client information if company and user are provided
+                if ($companyId && $userInfo): 
+                ?>
+                <div class="alert alert-info">
+                    <strong>Client Info Loaded:</strong> 
+                    Company: <?php echo htmlspecialchars($companyInfo['company_name'] ?? ''); ?>, 
+                    User: <?php echo htmlspecialchars($userInfo['name'] ?? ''); ?>
+                </div>
+                <?php endif; ?>
+                
+                <?php if ($tourId): ?>
+                <div class="alert alert-info">
+                    <strong>Tour Information Loaded:</strong> 
+                    <span id="loaded_tour_name"><?php echo htmlspecialchars($tourInfo['headliner'] ?? ''); ?></span>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+        
+        <!-- Main Order Form -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Audio/Video Order Form</h3>
+            </div>
             <div class="card-body">
                 <form id="av-order-form" method="POST">
                     <!-- Hidden fields -->
@@ -136,497 +220,571 @@ ob_start();
 
                     <?php if (!$isClient && !$companyId): ?>
                     <!-- Company selection for admin users -->
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <label for="company_selector" class="form-label">Select Company *</label>
-                            <select class="form-control" id="company_selector" name="company_selector" required onchange="onCompanyChange()">
-                                <option value="">Choose a company...</option>
-                                <?php
-                                global $pdo;
-                                $companies = $pdo->query("SELECT id, company_name FROM companies WHERE enabled = 1 ORDER BY company_name")->fetchAll();
-                                foreach ($companies as $company):
-                                ?>
-                                    <option value="<?php echo $company['id']; ?>" <?php echo $companyId == $company['id'] ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($company['company_name']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h4>Company Selection</h4>
                         </div>
-                        <div class="col-md-6">
-                            <label for="user_selector" class="form-label">Select User *</label>
-                            <select class="form-control" id="user_selector" name="user_selector" required onchange="onUserChange()" <?php echo !$companyId ? 'disabled' : ''; ?>>
-                                <option value="">Choose a user...</option>
-                                <?php if ($companyId): 
-                                $users = $pdo->query("SELECT id, name, email FROM users WHERE company_id = $companyId AND is_active = 1 ORDER BY name")->fetchAll();
-                                foreach ($users as $user):
-                                ?>
-                                    <option value="<?php echo $user['id']; ?>" <?php echo $userId == $user['id'] ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($user['name']); ?> (<?php echo htmlspecialchars($user['email']); ?>)
-                                    </option>
-                                <?php endforeach; endif; ?>
-                            </select>
+                        <div class="card-body">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label for="company_selector" class="form-label">Select Company *</label>
+                                    <select class="form-control" id="company_selector" name="company_selector" required onchange="onCompanyChange()">
+                                        <option value="">Choose a company...</option>
+                                        <?php
+                                        global $pdo;
+                                        $companies = $pdo->query("SELECT id, company_name FROM companies WHERE enabled = 1 ORDER BY company_name")->fetchAll();
+                                        foreach ($companies as $company):
+                                        ?>
+                                            <option value="<?php echo $company['id']; ?>" <?php echo $companyId == $company['id'] ? 'selected' : ''; ?>>
+                                                <?php echo htmlspecialchars($company['company_name']); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="user_selector" class="form-label">Select User *</label>
+                                    <select class="form-control" id="user_selector" name="user_selector" required onchange="onUserChange()" <?php echo !$companyId ? 'disabled' : ''; ?>>
+                                        <option value="">Choose a user...</option>
+                                        <?php if ($companyId): 
+                                        $users = $pdo->query("SELECT id, name, email FROM users WHERE company_id = $companyId AND is_active = 1 ORDER BY name")->fetchAll();
+                                        foreach ($users as $user):
+                                        ?>
+                                            <option value="<?php echo $user['id']; ?>" <?php echo $userId == $user['id'] ? 'selected' : ''; ?>>
+                                                <?php echo htmlspecialchars($user['name']); ?> (<?php echo htmlspecialchars($user['email']); ?>)
+                                            </option>
+                                        <?php endforeach; endif; ?>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <?php if (!$tourId): ?>
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label for="tour_input" class="form-label">Select Tour *</label>
+                                    <input type="text" class="form-control" id="tour_input" name="tour_input" placeholder="Start typing to search for a tour..." autocomplete="off">
+                                    <div id="tour_suggestions" class="list-group" style="display: none; position: absolute; z-index: 1000; width: 100%;"></div>
+                                </div>
+                            </div>
+                            <?php endif; ?>
                         </div>
-                    </div>
-                    
-                    <?php if (!$tourId): ?>
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <label for="tour_input" class="form-label">Select Tour *</label>
-                            <input type="text" class="form-control" id="tour_input" name="tour_input" placeholder="Start typing to search for a tour..." autocomplete="off">
-                            <div id="tour_suggestions" class="list-group" style="display: none; position: absolute; z-index: 1000; width: 100%;"></div>
-                        </div>
-                    </div>
-                    <?php endif; ?>
-                    <?php endif; ?>
-
-                    <?php 
-                    // Show client information if company and user are provided
-                    if ($companyId && $userInfo): 
-                    ?>
-                    <div class="alert alert-info">
-                        <strong>Client Info Loaded:</strong> 
-                        Company: <?php echo htmlspecialchars($companyInfo['company_name'] ?? ''); ?>, 
-                        User: <?php echo htmlspecialchars($userInfo['name'] ?? ''); ?>
-                    </div>
-                    <?php endif; ?>
-                    
-                    <?php if ($tourId): ?>
-                    <div class="alert alert-info">
-                        <strong>Tour Information Loaded:</strong> 
-                        <span id="loaded_tour_name"><?php echo htmlspecialchars($tourInfo['headliner'] ?? ''); ?></span>
                     </div>
                     <?php endif; ?>
 
                     <!-- Promoter Information -->
-                    <div class="row mb-4">
-                        <h4>Promoter Information</h4>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="promoter_name" class="form-label">Promoter Full Name</label>
-                                <input type="text" class="form-control" id="promoter_name" name="promoter_name" value="<?php echo htmlspecialchars($userInfo['name'] ?? ''); ?>" readonly>
-                            </div>
-                            <div class="mb-3">
-                                <label for="promoter_phone" class="form-label">Phone Number</label>
-                                <input type="text" class="form-control" id="promoter_phone" name="promoter_phone" value="<?php echo htmlspecialchars($userInfo['phone'] ?? ''); ?>" maxlength="14" oninput="formatPhoneNumberInput('promoter_phone')" onchange="formatPhoneNumber('promoter_phone')">
-                                <div class="form-text">Format: (###) ###-####</div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="promoter_phone_ext" class="form-label">Phone Extension</label>
-                                <input type="text" class="form-control" id="promoter_phone_ext" name="promoter_phone_ext" value="<?php echo htmlspecialchars($userInfo['phone_ext'] ?? ''); ?>">
-                            </div>
-                            <div class="mb-3">
-                                <label for="promoter_alt_phone" class="form-label">Alternate Phone Number</label>
-                                <input type="text" class="form-control" id="promoter_alt_phone" name="promoter_alt_phone" value="<?php echo htmlspecialchars($userInfo['alt_phone'] ?? ''); ?>" maxlength="14" oninput="formatPhoneNumberInput('promoter_alt_phone')" onchange="formatPhoneNumber('promoter_alt_phone')">
-                                <div class="form-text">Format: (###) ###-####</div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="promoter_alt_phone_ext" class="form-label">Alternative Phone Number Extension</label>
-                                <input type="text" class="form-control" id="promoter_alt_phone_ext" name="promoter_alt_phone_ext" value="<?php echo htmlspecialchars($userInfo['alt_phone_ext'] ?? ''); ?>">
-                            </div>
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h4>Promoter Information</h4>
                         </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="promoter_email" class="form-label">Promoter Email</label>
-                                <input type="email" class="form-control" id="promoter_email" name="promoter_email" value="<?php echo htmlspecialchars($userInfo['email'] ?? ''); ?>" readonly>
-                            </div>
-                            <div class="mb-3">
-                                <label for="promoter_company" class="form-label">Promoter Company Name</label>
-                                <input type="text" class="form-control" id="promoter_company" name="promoter_company" value="<?php echo htmlspecialchars($companyInfo['company_name'] ?? ''); ?>" readonly>
+                        <div class="card-body">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="promoter_name" class="form-label">Promoter Full Name</label>
+                                        <input type="text" class="form-control" id="promoter_name" name="promoter_name" value="<?php echo htmlspecialchars($userInfo['name'] ?? ''); ?>" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="promoter_phone" class="form-label">Phone Number</label>
+                                        <input type="text" class="form-control" id="promoter_phone" name="promoter_phone" value="<?php echo htmlspecialchars($userInfo['phone'] ?? ''); ?>" maxlength="14" oninput="formatPhoneNumberInput('promoter_phone')" onchange="formatPhoneNumber('promoter_phone')">
+                                        <div class="form-text">Format: (###) ###-####</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="promoter_phone_ext" class="form-label">Phone Extension</label>
+                                        <input type="text" class="form-control" id="promoter_phone_ext" name="promoter_phone_ext" value="<?php echo htmlspecialchars($userInfo['phone_ext'] ?? ''); ?>">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="promoter_alt_phone" class="form-label">Alternate Phone Number</label>
+                                        <input type="text" class="form-control" id="promoter_alt_phone" name="promoter_alt_phone" value="<?php echo htmlspecialchars($userInfo['alt_phone'] ?? ''); ?>" maxlength="14" oninput="formatPhoneNumberInput('promoter_alt_phone')" onchange="formatPhoneNumber('promoter_alt_phone')">
+                                        <div class="form-text">Format: (###) ###-####</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="promoter_alt_phone_ext" class="form-label">Alternative Phone Number Extension</label>
+                                        <input type="text" class="form-control" id="promoter_alt_phone_ext" name="promoter_alt_phone_ext" value="<?php echo htmlspecialchars($userInfo['alt_phone_ext'] ?? ''); ?>">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="promoter_email" class="form-label">Promoter Email</label>
+                                        <input type="email" class="form-control" id="promoter_email" name="promoter_email" value="<?php echo htmlspecialchars($userInfo['email'] ?? ''); ?>" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="promoter_company" class="form-label">Promoter Company Name</label>
+                                        <input type="text" class="form-control" id="promoter_company" name="promoter_company" value="<?php echo htmlspecialchars($companyInfo['company_name'] ?? ''); ?>" readonly>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Order Details -->
-                    <div class="row mb-4">
-                        <h4>Order Details</h4>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="order_details_purchase_order_number" class="form-label">Purchase Order #</label>
-                                <input type="text" class="form-control" id="order_details_purchase_order_number" name="order_details_purchase_order_number">
-                            </div>
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h4>Order Details</h4>
                         </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Today's Date</label>
-                                <span id="current_date" class="form-control-plaintext"><?php echo date('Y-m-d'); ?></span>
+                        <div class="card-body">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="order_details_purchase_order_number" class="form-label">Purchase Order #</label>
+                                        <input type="text" class="form-control" id="order_details_purchase_order_number" name="order_details_purchase_order_number">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Today's Date</label>
+                                        <span id="current_date" class="form-control-plaintext"><?php echo date('Y-m-d'); ?></span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" id="order_details_audio_order" name="order_details_audio_order" onchange="toggleRushOrder('audio', this.checked)">
-                                <label class="form-check-label" for="order_details_audio_order">Audio Order</label>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="order_details_audio_order" name="order_details_audio_order" onchange="toggleRushOrder('audio', this.checked)">
+                                        <label class="form-check-label" for="order_details_audio_order">Audio Order</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="order_details_audio_order_rush" name="order_details_audio_order_rush" disabled onchange="updateInvoiceCost()">
+                                        <label class="form-check-label text-danger" for="order_details_audio_order_rush">
+                                            RUSH ORDER ($<span id="audio_rush_amount"><?php echo $settings['audio_rush_order']; ?></span>)
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="order_details_video_order" name="order_details_video_order" onchange="toggleRushOrder('video', this.checked)">
+                                        <label class="form-check-label" for="order_details_video_order">Video Order</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="order_details_video_order_rush" name="order_details_video_order_rush" disabled onchange="updateInvoiceCost()">
+                                        <label class="form-check-label text-danger" for="order_details_video_order_rush">
+                                            RUSH ORDER ($<span id="video_rush_amount"><?php echo $settings['video_rush_order']; ?></span>)
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" id="order_details_audio_order_rush" name="order_details_audio_order_rush" disabled onchange="updateInvoiceCost()">
-                                <label class="form-check-label text-danger" for="order_details_audio_order_rush">
-                                    RUSH ORDER ($<span id="audio_rush_amount"><?php echo $settings['audio_rush_order']; ?></span>)
-                                </label>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" id="order_details_video_order" name="order_details_video_order" onchange="toggleRushOrder('video', this.checked)">
-                                <label class="form-check-label" for="order_details_video_order">Video Order</label>
-                            </div>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" id="order_details_video_order_rush" name="order_details_video_order_rush" disabled onchange="updateInvoiceCost()">
-                                <label class="form-check-label text-danger" for="order_details_video_order_rush">
-                                    RUSH ORDER ($<span id="video_rush_amount"><?php echo $settings['video_rush_order']; ?></span>)
-                                </label>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="order_details_audio_received_by" class="form-label">Audio must be received by</label>
-                                <input type="date" class="form-control" id="order_details_audio_received_by" name="order_details_audio_received_by">
-                            </div>
-                            <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" id="order_details_audio_order_requires_approval" name="order_details_audio_order_requires_approval">
-                                <label class="form-check-label" for="order_details_audio_order_requires_approval">Do not ship audio spots without approval</label>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="order_details_video_order_received_by" class="form-label">Video must be received by</label>
-                                <input type="date" class="form-control" id="order_details_video_order_received_by" name="order_details_video_order_received_by">
-                            </div>
-                            <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" id="order_details_video_order_requires_approval" name="order_details_video_order_requires_approval">
-                                <label class="form-check-label" for="order_details_video_order_requires_approval">Do not ship video spots without approval</label>
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="order_details_audio_received_by" class="form-label">Audio must be received by</label>
+                                        <input type="date" class="form-control" id="order_details_audio_received_by" name="order_details_audio_received_by">
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="order_details_audio_order_requires_approval" name="order_details_audio_order_requires_approval">
+                                        <label class="form-check-label" for="order_details_audio_order_requires_approval">Do not ship audio spots without approval</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="order_details_video_order_received_by" class="form-label">Video must be received by</label>
+                                        <input type="date" class="form-control" id="order_details_video_order_received_by" name="order_details_video_order_received_by">
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="order_details_video_order_requires_approval" name="order_details_video_order_requires_approval">
+                                        <label class="form-check-label" for="order_details_video_order_requires_approval">Do not ship video spots without approval</label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Event Information -->
-                    <div class="row mb-4">
-                        <h4>Event Information</h4>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="event_info_headliner" class="form-label">Tour/Event/Headliner *</label>
-                                <textarea class="form-control" id="event_info_headliner" name="event_info_headliner" rows="2" required><?php echo htmlspecialchars($tourInfo['headliner'] ?? ''); ?></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label for="event_info_support" class="form-label">Support</label>
-                                <textarea class="form-control" id="event_info_support" name="event_info_support" rows="2"><?php echo htmlspecialchars($tourInfo['support'] ?? ''); ?></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label for="event_info_venue" class="form-label">Venue *</label>
-                                <input type="text" class="form-control" id="event_info_venue" name="event_info_venue" placeholder="Start typing to search venues..." autocomplete="off">
-                                <div id="venue_suggestions" class="list-group" style="display: none; position: absolute; z-index: 1000; width: 100%;"></div>
-                                <div class="form-text">NOTE: we will only say market if it's written in the Venue Section</div>
-                            </div>
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h4>Event Information</h4>
                         </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" id="event_info_mention_the" name="event_info_mention_the">
-                                    <label class="form-check-label" for="event_info_mention_the">Mention "The" in Venue Name?</label>
+                        <div class="card-body">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="event_info_headliner" class="form-label">Tour/Event/Headliner *</label>
+                                        <textarea class="form-control" id="event_info_headliner" name="event_info_headliner" rows="2" required><?php echo htmlspecialchars($tourInfo['headliner'] ?? ''); ?></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="event_info_support" class="form-label">Support</label>
+                                        <textarea class="form-control" id="event_info_support" name="event_info_support" rows="2"><?php echo htmlspecialchars($tourInfo['support'] ?? ''); ?></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="event_info_venue" class="form-label">Venue *</label>
+                                        <input type="text" class="form-control" id="event_info_venue" name="event_info_venue" placeholder="Start typing to search venues..." autocomplete="off">
+                                        <div id="venue_suggestions" class="list-group" style="display: none; position: absolute; z-index: 1000; width: 100%;"></div>
+                                        <div class="form-text">NOTE: we will only say market if it's written in the Venue Section</div>
+                                    </div>
                                 </div>
-                                <label for="event_info_market" class="form-label">City/Market *</label>
-                                <input type="text" class="form-control" id="event_info_market" name="event_info_market" placeholder="Start typing to search markets..." autocomplete="off">
-                                <div id="market_suggestions" class="list-group" style="display: none; position: absolute; z-index: 1000; width: 100%;"></div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" id="event_info_mention_the" name="event_info_mention_the">
+                                            <label class="form-check-label" for="event_info_mention_the">Mention "The" in Venue Name?</label>
+                                        </div>
+                                        <label for="event_info_market" class="form-label">City/Market *</label>
+                                        <input type="text" class="form-control" id="event_info_market" name="event_info_market" placeholder="Start typing to search markets..." autocomplete="off">
+                                        <div id="market_suggestions" class="list-group" style="display: none; position: absolute; z-index: 1000; width: 100%;"></div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="event_info_date" class="form-label">Date *</label>
+                                        <input type="date" class="form-control" id="event_info_date" name="event_info_date">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="event_info_times" class="form-label">Time/s</label>
+                                        <input type="text" class="form-control" id="event_info_times" name="event_info_times" placeholder="e.g., 8pm">
+                                    </div>
+                                    <div class="form-text mb-2">NOTE: We only mention Fri/Sat in spots unless otherwise requested.</div>
+                                </div>
                             </div>
-                            <div class="mb-3">
-                                <label for="event_info_date" class="form-label">Date *</label>
-                                <input type="date" class="form-control" id="event_info_date" name="event_info_date">
-                            </div>
-                            <div class="mb-3">
-                                <label for="event_info_times" class="form-label">Time/s</label>
-                                <input type="text" class="form-control" id="event_info_times" name="event_info_times" placeholder="e.g., 8pm">
-                            </div>
-                            <div class="form-text mb-2">NOTE: We only mention Fri/Sat in spots unless otherwise requested.</div>
-                        </div>
-                    </div>
 
-                    <!-- Additional Dates Repeater -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <button type="button" class="btn btn-sm btn-outline-primary mb-2" onclick="addAdditionalDate()">Add Additional Dates</button>
-                            <div id="additional_dates_container"></div>
-                        </div>
-                    </div>
+                            <!-- Additional Dates Repeater -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <button type="button" class="btn btn-sm btn-outline-primary mb-2" onclick="addAdditionalDate()">Add Additional Dates</button>
+                                    <div id="additional_dates_container"></div>
+                                </div>
+                            </div>
 
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <label for="event_info_custom_dates_string" class="form-label">Custom string of dates</label>
-                            <textarea class="form-control" id="event_info_custom_dates_string" name="event_info_custom_dates_string" rows="2" placeholder="Example: Two shows every Friday in July, at 5pm and 8pm"></textarea>
-                            <div class="form-text">Type residency or other custom dates</div>
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <label for="event_info_custom_dates_string" class="form-label">Custom string of dates</label>
+                                    <textarea class="form-control" id="event_info_custom_dates_string" name="event_info_custom_dates_string" rows="2" placeholder="Example: Two shows every Friday in July, at 5pm and 8pm"></textarea>
+                                    <div class="form-text">Type residency or other custom dates</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Local Copy -->
-                    <div class="row mb-4">
-                        <h4>Local Copy</h4>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="local_copy_intro_line" class="form-label">Intro Line</label>
-                                <textarea class="form-control" id="local_copy_intro_line" name="local_copy_intro_line" rows="2"><?php echo htmlspecialchars($tourInfo['intro_line'] ?? ''); ?></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label for="local_copy_produced_by" class="form-label">Produced By</label>
-                                <textarea class="form-control" id="local_copy_produced_by" name="local_copy_produced_by" rows="2"><?php echo htmlspecialchars($tourInfo['produced_by'] ?? ''); ?></textarea>
-                            </div>
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h4>Local Copy</h4>
                         </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="local_copy_outro_line" class="form-label">Outro Line</label>
-                                <textarea class="form-control" id="local_copy_outro_line" name="local_copy_outro_line" rows="2"><?php echo htmlspecialchars($tourInfo['outro_line'] ?? ''); ?></textarea>
+                        <div class="card-body">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="local_copy_intro_line" class="form-label">Intro Line</label>
+                                        <textarea class="form-control" id="local_copy_intro_line" name="local_copy_intro_line" rows="2"><?php echo htmlspecialchars($tourInfo['intro_line'] ?? ''); ?></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="local_copy_produced_by" class="form-label">Produced By</label>
+                                        <textarea class="form-control" id="local_copy_produced_by" name="local_copy_produced_by" rows="2"><?php echo htmlspecialchars($tourInfo['produced_by'] ?? ''); ?></textarea>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="local_copy_outro_line" class="form-label">Outro Line</label>
+                                        <textarea class="form-control" id="local_copy_outro_line" name="local_copy_outro_line" rows="2"><?php echo htmlspecialchars($tourInfo['outro_line'] ?? ''); ?></textarea>
+                                    </div>
+                                    <div class="form-text mb-2">NOTE: Please type out exactly how you want your station mentioned. If you include a "." (Point) in the station ID, the word "Point" will be said.</div>
+                                </div>
                             </div>
-                            <div class="form-text mb-2">NOTE: Please type out exactly how you want your station mentioned. If you include a "." (Point) in the station ID, the word "Point" will be said.</div>
                         </div>
                     </div>
 
                     <!-- Ticket Information -->
-                    <div class="row mb-4">
-                        <h4>Ticket Information</h4>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="ticket_info_on_sale_day_time" class="form-label">On Sale Day/Time</label>
-                                <input type="text" class="form-control" id="ticket_info_on_sale_day_time" name="ticket_info_on_sale_day_time" placeholder="Only list date if required">
-                                <div class="form-text">Only list date if required. Otherwise, only date and time will be mentioned in pre-sale spot.</div>
-                            </div>
-                            <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" id="ticket_info_mention_reserved_seats" name="ticket_info_mention_reserved_seats">
-                                <label class="form-check-label" for="ticket_info_mention_reserved_seats">Mention Reserved Seats</label>
-                            </div>
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h4>Ticket Information</h4>
                         </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="ticket_info_locations" class="form-label">Ticket Information/Locations</label>
-                                <textarea class="form-control" id="ticket_info_locations" name="ticket_info_locations" rows="3"></textarea>
+                        <div class="card-body">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="ticket_info_on_sale_day_time" class="form-label">On Sale Day/Time</label>
+                                        <input type="text" class="form-control" id="ticket_info_on_sale_day_time" name="ticket_info_on_sale_day_time" placeholder="Only list date if required">
+                                        <div class="form-text">Only list date if required. Otherwise, only date and time will be mentioned in pre-sale spot.</div>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="ticket_info_mention_reserved_seats" name="ticket_info_mention_reserved_seats">
+                                        <label class="form-check-label" for="ticket_info_mention_reserved_seats">Mention Reserved Seats</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="ticket_info_locations" class="form-label">Ticket Information/Locations</label>
+                                        <textarea class="form-control" id="ticket_info_locations" name="ticket_info_locations" rows="3"></textarea>
+                                    </div>
+                                    <div class="form-text">NOTE: :30, :15, :10 spots have limited time for ticket information</div>
+                                </div>
                             </div>
-                            <div class="form-text">NOTE: :30, :15, :10 spots have limited time for ticket information</div>
                         </div>
                     </div>
 
                     <!-- Spot Information -->
-                    <div class="row mb-4">
-                        <h4>Spot Information</h4>
-                        <div class="form-text mb-3">NOTE: :10 and :15 spots may not be available for all tours</div>
-                        <div class="form-text mb-3">At least one spot must be selected</div>
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h4>Spot Information</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-text mb-3 text-center">NOTE: :10 and :15 spots may not be available for all tours</div>
+                            <div class="form-text mb-3 text-center">At least one spot must be selected</div>
 
-                        <!-- AUDIO -->
-                        <h5 class="mb-3">AUDIO</h5>
-                        <div class="mb-3">
-                            <strong>Presale</strong>
-                            <div class="d-flex justify-content-start gap-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_audio_presale_60" name="spot_info_audio_presale_60">
-                                    <label class="form-check-label" for="spot_info_audio_presale_60">60</label>
+                            <div class="row">
+                                <div class="col-md-5 ms-auto">
+                                    <h5 class="text-center mb-3">AUDIO</h5>
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-center align-items-center gap-3">
+                                            <div class="text-end" style="min-width: 100px;">
+                                                <strong>Presale</strong>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_audio_presale_60" name="spot_info_audio_presale_60">
+                                                    <label class="custom-checkbox-label" for="spot_info_audio_presale_60">60</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_audio_presale_30" name="spot_info_audio_presale_30">
+                                                    <label class="custom-checkbox-label" for="spot_info_audio_presale_30">30</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_audio_presale_15" name="spot_info_audio_presale_15">
+                                                    <label class="custom-checkbox-label" for="spot_info_audio_presale_15">15</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_audio_presale_10" name="spot_info_audio_presale_10">
+                                                    <label class="custom-checkbox-label" for="spot_info_audio_presale_10">10</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-center align-items-center gap-3">
+                                            <div class="text-end" style="min-width: 100px;">
+                                                <strong>On Sale Now</strong>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_audio_on_sale_now_60" name="spot_info_audio_on_sale_now_60">
+                                                    <label class="custom-checkbox-label" for="spot_info_audio_on_sale_now_60">60</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_audio_on_sale_now_30" name="spot_info_audio_on_sale_now_30">
+                                                    <label class="custom-checkbox-label" for="spot_info_audio_on_sale_now_30">30</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_audio_on_sale_now_15" name="spot_info_audio_on_sale_now_15">
+                                                    <label class="custom-checkbox-label" for="spot_info_audio_on_sale_now_15">15</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_audio_on_sale_now_10" name="spot_info_audio_on_sale_now_10">
+                                                    <label class="custom-checkbox-label" for="spot_info_audio_on_sale_now_10">10</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-center align-items-center gap-3">
+                                            <div class="text-end" style="min-width: 100px;">
+                                                <strong>Week Of</strong>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_audio_week_of_60" name="spot_info_audio_week_of_60">
+                                                    <label class="custom-checkbox-label" for="spot_info_audio_week_of_60">60</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_audio_week_of_30" name="spot_info_audio_week_of_30">
+                                                    <label class="custom-checkbox-label" for="spot_info_audio_week_of_30">30</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_audio_week_of_15" name="spot_info_audio_week_of_15">
+                                                    <label class="custom-checkbox-label" for="spot_info_audio_week_of_15">15</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_audio_week_of_10" name="spot_info_audio_week_of_10">
+                                                    <label class="custom-checkbox-label" for="spot_info_audio_week_of_10">10</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-center align-items-center gap-3">
+                                            <div class="text-end" style="min-width: 100px;">
+                                                <strong>Day Prior</strong>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_audio_day_prior_60" name="spot_info_audio_day_prior_60">
+                                                    <label class="custom-checkbox-label" for="spot_info_audio_day_prior_60">60</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_audio_day_prior_30" name="spot_info_audio_day_prior_30">
+                                                    <label class="custom-checkbox-label" for="spot_info_audio_day_prior_30">30</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_audio_day_prior_15" name="spot_info_audio_day_prior_15">
+                                                    <label class="custom-checkbox-label" for="spot_info_audio_day_prior_15">15</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_audio_day_prior_10" name="spot_info_audio_day_prior_10">
+                                                    <label class="custom-checkbox-label" for="spot_info_audio_day_prior_10">10</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-center align-items-center gap-3">
+                                            <div class="text-end" style="min-width: 100px;">
+                                                <strong>Day Of</strong>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_audio_day_of_60" name="spot_info_audio_day_of_60">
+                                                    <label class="custom-checkbox-label" for="spot_info_audio_day_of_60">60</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_audio_day_of_30" name="spot_info_audio_day_of_30">
+                                                    <label class="custom-checkbox-label" for="spot_info_audio_day_of_30">30</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_audio_day_of_15" name="spot_info_audio_day_of_15">
+                                                    <label class="custom-checkbox-label" for="spot_info_audio_day_of_15">15</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_audio_day_of_10" name="spot_info_audio_day_of_10">
+                                                    <label class="custom-checkbox-label" for="spot_info_audio_day_of_10">10</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_audio_presale_30" name="spot_info_audio_presale_30">
-                                    <label class="form-check-label" for="spot_info_audio_presale_30">30</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_audio_presale_15" name="spot_info_audio_presale_15">
-                                    <label class="form-check-label" for="spot_info_audio_presale_15">15</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_audio_presale_10" name="spot_info_audio_presale_10">
-                                    <label class="form-check-label" for="spot_info_audio_presale_10">10</label>
+                                
+                                <div class="col-md-5 me-auto">
+                                    <h5 class="text-center mb-3">VIDEO</h5>
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-center align-items-center gap-3">
+                                            <div class="text-end" style="min-width: 100px;">
+                                                <strong>Presale</strong>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_video_presale_30" name="spot_info_video_presale_30">
+                                                    <label class="custom-checkbox-label" for="spot_info_video_presale_30">30</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_video_presale_15" name="spot_info_video_presale_15">
+                                                    <label class="custom-checkbox-label" for="spot_info_video_presale_15">15</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_video_presale_10" name="spot_info_video_presale_10">
+                                                    <label class="custom-checkbox-label" for="spot_info_video_presale_10">10</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-center align-items-center gap-3">
+                                            <div class="text-end" style="min-width: 100px;">
+                                                <strong>On Sale Now</strong>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_video_on_sale_now_30" name="spot_info_video_on_sale_now_30">
+                                                    <label class="custom-checkbox-label" for="spot_info_video_on_sale_now_30">30</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_video_on_sale_now_15" name="spot_info_video_on_sale_now_15">
+                                                    <label class="custom-checkbox-label" for="spot_info_video_on_sale_now_15">15</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_video_on_sale_now_10" name="spot_info_video_on_sale_now_10">
+                                                    <label class="custom-checkbox-label" for="spot_info_video_on_sale_now_10">10</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-center align-items-center gap-3">
+                                            <div class="text-end" style="min-width: 100px;">
+                                                <strong>Week Of</strong>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_video_week_of_30" name="spot_info_video_week_of_30">
+                                                    <label class="custom-checkbox-label" for="spot_info_video_week_of_30">30</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_video_week_of_15" name="spot_info_video_week_of_15">
+                                                    <label class="custom-checkbox-label" for="spot_info_video_week_of_15">15</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_video_week_of_10" name="spot_info_video_week_of_10">
+                                                    <label class="custom-checkbox-label" for="spot_info_video_week_of_10">10</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-center align-items-center gap-3">
+                                            <div class="text-end" style="min-width: 100px;">
+                                                <strong>Day Prior</strong>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_video_day_prior_30" name="spot_info_video_day_prior_30">
+                                                    <label class="custom-checkbox-label" for="spot_info_video_day_prior_30">30</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_video_day_prior_15" name="spot_info_video_day_prior_15">
+                                                    <label class="custom-checkbox-label" for="spot_info_video_day_prior_15">15</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_video_day_prior_10" name="spot_info_video_day_prior_10">
+                                                    <label class="custom-checkbox-label" for="spot_info_video_day_prior_10">10</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-center align-items-center gap-3">
+                                            <div class="text-end" style="min-width: 100px;">
+                                                <strong>Day Of</strong>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_video_day_of_30" name="spot_info_video_day_of_30">
+                                                    <label class="custom-checkbox-label" for="spot_info_video_day_of_30">30</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_video_day_of_15" name="spot_info_video_day_of_15">
+                                                    <label class="custom-checkbox-label" for="spot_info_video_day_of_15">15</label>
+                                                </div>
+                                                <div class="custom-checkbox-container">
+                                                    <input class="custom-checkbox-input" type="checkbox" id="spot_info_video_day_of_10" name="spot_info_video_day_of_10">
+                                                    <label class="custom-checkbox-label" for="spot_info_video_day_of_10">10</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="mb-3">
-                            <strong>On Sale Now</strong>
-                            <div class="d-flex justify-content-start gap-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_audio_on_sale_now_60" name="spot_info_audio_on_sale_now_60">
-                                    <label class="form-check-label" for="spot_info_audio_on_sale_now_60">60</label>
+                            <div class="mt-4 mb-3 text-center"> <!-- Add spacing above ISCI code and center the entire section -->
+                                <div class="d-flex align-items-center justify-content-center gap-2"> <!-- Position label next to input and center everything -->
+                                    <label for="spot_info_custom_isci" class="form-label mb-0">Custom ISCI code:</label>
+                                    <input type="text" class="form-control" id="spot_info_custom_isci" name="spot_info_custom_isci" maxlength="13" style="max-width: 200px; width: auto;"> <!-- Smaller width input, centered -->
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_audio_on_sale_now_30" name="spot_info_audio_on_sale_now_30">
-                                    <label class="form-check-label" for="spot_info_audio_on_sale_now_30">30</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_audio_on_sale_now_15" name="spot_info_audio_on_sale_now_15">
-                                    <label class="form-check-label" for="spot_info_audio_on_sale_now_15">15</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_audio_on_sale_now_10" name="spot_info_audio_on_sale_now_10">
-                                    <label class="form-check-label" for="spot_info_audio_on_sale_now_10">10</label>
-                                </div>
+                                <div class="form-text mt-1">Must be limited to 13 characters</div> <!-- Move constraint to form text below -->
                             </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <strong>Week Of</strong>
-                            <div class="d-flex justify-content-start gap-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_audio_week_of_60" name="spot_info_audio_week_of_60">
-                                    <label class="form-check-label" for="spot_info_audio_week_of_60">60</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_audio_week_of_30" name="spot_info_audio_week_of_30">
-                                    <label class="form-check-label" for="spot_info_audio_week_of_30">30</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_audio_week_of_15" name="spot_info_audio_week_of_15">
-                                    <label class="form-check-label" for="spot_info_audio_week_of_15">15</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_audio_week_of_10" name="spot_info_audio_week_of_10">
-                                    <label class="form-check-label" for="spot_info_audio_week_of_10">10</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <strong>Day Prior</strong>
-                            <div class="d-flex justify-content-start gap-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_audio_day_prior_60" name="spot_info_audio_day_prior_60">
-                                    <label class="form-check-label" for="spot_info_audio_day_prior_60">60</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_audio_day_prior_30" name="spot_info_audio_day_prior_30">
-                                    <label class="form-check-label" for="spot_info_audio_day_prior_30">30</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_audio_day_prior_15" name="spot_info_audio_day_prior_15">
-                                    <label class="form-check-label" for="spot_info_audio_day_prior_15">15</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_audio_day_prior_10" name="spot_info_audio_day_prior_10">
-                                    <label class="form-check-label" for="spot_info_audio_day_prior_10">10</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <strong>Day Of</strong>
-                            <div class="d-flex justify-content-start gap-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_audio_day_of_60" name="spot_info_audio_day_of_60">
-                                    <label class="form-check-label" for="spot_info_audio_day_of_60">60</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_audio_day_of_30" name="spot_info_audio_day_of_30">
-                                    <label class="form-check-label" for="spot_info_audio_day_of_30">30</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_audio_day_of_15" name="spot_info_audio_day_of_15">
-                                    <label class="form-check-label" for="spot_info_audio_day_of_15">15</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_audio_day_of_10" name="spot_info_audio_day_of_10">
-                                    <label class="form-check-label" for="spot_info_audio_day_of_10">10</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- VIDEO -->
-                        <h5 class="mb-3">VIDEO</h5>
-                        <div class="mb-3">
-                            <strong>Presale</strong>
-                            <div class="d-flex justify-content-start gap-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_video_presale_30" name="spot_info_video_presale_30">
-                                    <label class="form-check-label" for="spot_info_video_presale_30">30</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_video_presale_15" name="spot_info_video_presale_15">
-                                    <label class="form-check-label" for="spot_info_video_presale_15">15</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_video_presale_10" name="spot_info_video_presale_10">
-                                    <label class="form-check-label" for="spot_info_video_presale_10">10</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <strong>On Sale Now</strong>
-                            <div class="d-flex justify-content-start gap-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_video_on_sale_now_30" name="spot_info_video_on_sale_now_30">
-                                    <label class="form-check-label" for="spot_info_video_on_sale_now_30">30</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_video_on_sale_now_15" name="spot_info_video_on_sale_now_15">
-                                    <label class="form-check-label" for="spot_info_video_on_sale_now_15">15</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_video_on_sale_now_10" name="spot_info_video_on_sale_now_10">
-                                    <label class="form-check-label" for="spot_info_video_on_sale_now_10">10</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <strong>Week Of</strong>
-                            <div class="d-flex justify-content-start gap-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_video_week_of_30" name="spot_info_video_week_of_30">
-                                    <label class="form-check-label" for="spot_info_video_week_of_30">30</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_video_week_of_15" name="spot_info_video_week_of_15">
-                                    <label class="form-check-label" for="spot_info_video_week_of_15">15</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_video_week_of_10" name="spot_info_video_week_of_10">
-                                    <label class="form-check-label" for="spot_info_video_week_of_10">10</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <strong>Day Prior</strong>
-                            <div class="d-flex justify-content-start gap-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_video_day_prior_30" name="spot_info_video_day_prior_30">
-                                    <label class="form-check-label" for="spot_info_video_day_prior_30">30</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_video_day_prior_15" name="spot_info_video_day_prior_15">
-                                    <label class="form-check-label" for="spot_info_video_day_prior_15">15</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_video_day_prior_10" name="spot_info_video_day_prior_10">
-                                    <label class="form-check-label" for="spot_info_video_day_prior_10">10</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <strong>Day Of</strong>
-                            <div class="d-flex justify-content-start gap-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_video_day_of_30" name="spot_info_video_day_of_30">
-                                    <label class="form-check-label" for="spot_info_video_day_of_30">30</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_video_day_of_15" name="spot_info_video_day_of_15">
-                                    <label class="form-check-label" for="spot_info_video_day_of_15">15</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="spot_info_video_day_of_10" name="spot_info_video_day_of_10">
-                                    <label class="form-check-label" for="spot_info_video_day_of_10">10</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="spot_info_custom_isci" class="form-label">Custom ISCI code, if required (must be limited to 13 characters)</label>
-                            <input type="text" class="form-control" id="spot_info_custom_isci" name="spot_info_custom_isci" maxlength="13">
                         </div>
                     </div>
 
                     <!-- Special Instructions -->
-                    <div class="row mb-4">
-                        <h4>Special Instructions</h4>
-                        <div class="form-text mb-3">NOTE: Pronunciations are your responsibility! If there is a doubt, please provide guidance.</div>
-                        <div class="col-12">
-                            <textarea class="form-control" id="special_instructions" name="special_instructions" rows="4" placeholder="Enter special instructions here..."></textarea>
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h4>Special Instructions</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-text mb-3">NOTE: Pronunciations are your responsibility! If there is a doubt, please provide guidance.</div>
+                            <div class="col-12">
+                                <textarea class="form-control" id="special_instructions" name="special_instructions" rows="4" placeholder="Enter special instructions here..."></textarea>
+                            </div>
                         </div>
                     </div>
 
