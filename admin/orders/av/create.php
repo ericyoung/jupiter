@@ -131,8 +131,8 @@ ob_start();
 .custom-checkbox-label {
     display: inline-block;
     padding: 4px 10px; /* Smaller padding */
-    background-color: #dcdcdc; /* Darker checkbox background */
-    border: 1.5px solid #adb5bd; /* Original border */
+    background-color: #f8d7da; /* Pleasant red background for unchecked */
+    border: 1.5px solid #dc3545; /* Red border for unchecked */
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
@@ -144,27 +144,27 @@ ob_start();
     z-index: 1;
     line-height: 1.2;
     font-size: 0.9rem; /* Smaller font */
-    color: #212529; /* Darker text color for better visibility */
+    color: #721c24; /* Dark red text for contrast */
     width: 100%; /* Make sure all labels have the same width */
     box-sizing: border-box; /* Include padding in width calculation */
 }
 
 .custom-checkbox-input:checked + .custom-checkbox-label {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
-    color: white;
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    background-color: #d4edda; /* Pleasant green background for checked */
+    border-color: #28a745; /* Green border for checked */
+    color: #155724; /* Dark green text for contrast */
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
 }
 
 .custom-checkbox-input:focus + .custom-checkbox-label {
-    outline: 2px solid rgba(13, 110, 253, 0.5);
+    outline: 2px solid rgba(40, 167, 69, 0.5);
     outline-offset: 2px;
 }
 
 .custom-checkbox-label:hover {
-    background-color: #cccccc; /* Slightly darker on hover to show state */
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.1);
+    background-color: #f1b0b7; /* Lighter red on hover for unchecked state */
+    border-color: #c82333;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.1);
 }
 </style>
 
