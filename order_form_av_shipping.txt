@@ -1,0 +1,28 @@
+The following describes the shipping section that appears just below the Special Instructions section.
+
+8. Shipping
+	a. AUDIO DELIVERY options
+		1a. left col: “AUDIO DELIVERY<br>All Audio sent via PDQ for client to distribute”
+		1b. right col: textarea with label "Promoter Email" and the email address of the client defined up in Promoter Information section. Show a hint that reads "Additional Email Addresses can be added." name is shipping_audio_email
+		2. full width alert “All cuts ordered will be delivered via your chosen delivery method unless otherwise stated in special instructions.” (h5)
+	d. VIDEO DELIVERY OPTIONS
+		1a. left col: checkbox for Comcast Ad Delivery. When checked, reveals two nested checkboxes: HD Delivery and SD Delivery. The names for these inputs are shipping_video_comcast_ad_delivery, shipping_video_comcast_ad_delivery_hd, shipping_video_comcast_ad_delivery_sd. when checked, show 1b.
+		1b. right col: when HD Delivery checked, show in right col a text input with label Station and a hint that reads "Please enter call letters for broadcast stations and SYS Code for cable stations.". Then right below it, show three checkboxes stacked: "Standard overnight :  $85 per cut per station", "1 hour $150 per cut per station", "Closed Caption $150 per cut".
+		The names for these inputs are shipping_video_comcast_ad_delivery_hd_station, shipping_video_comcast_ad_delivery_hd_standard_overnight,
+		shipping_video_comcast_ad_delivery_hd_one_hour_cut,
+		shipping_video_comcast_ad_delivery_hd_closed_caption,
+		shipping_video_comcast_ad_delivery_sd_station,
+		shipping_video_comcast_ad_delivery_sd_standard_overnight,
+		shipping_video_comcast_ad_delivery_sd_one_hour_cut,
+		shipping_video_comcast_ad_delivery_sd_closed_caption
+		2a. left col: checkbox for Broadcast Link (shipping_video_broadcast_link)-when checked show 2b.
+		2b. right col: text input for "Cost $250 for first 2 cuts / $75 per cut after<br>Email address to receive link" and a hint of "BYP Broadcast link file specs .mov 1920 x 1080 H.264. If another file type is needed other than above please enter below." Just below this, show another text input for "Custom File Specification". the names are shipping_video_broadcast_link_email and shipping_video_broadcast_link_custom_file_spec
+		3a. left col: checkbox for Web Dub (shipping_video_web_dub)-when checked, show 3b.
+		3b. right col: text input for "Cost $125 for first cut / $75 per cut after<br>Email address to receive link" and a hint of "BYP web dub file specs .mp4 1080 h.264 rate 4–5mbps. If another file type is needed other than above please enter below." Just below this, show another text input for "Custom File Specification". the names are shipping_video_web_dub_email and shipping_video_web_dub_custom_file_spec
+		4a. left col: checkbox for Venue Files (shipping_video_venue_files)-when checked, show 4b.
+		4b. right col: text input for "Cost $150 for first cut / $75 per cut after<br>Email address to receive link for venue distribution" and a hint of "BYP venue file specs .mov 1920 x 1080 H.264. If another file type is needed other than above please enter below." Just below this, show another text input for "Custom File Specification". the names are shipping_video_venue_files_email and shipping_video_venue_files_custom_file_spec
+		5a. left col: checkbox for Hard Dub. when checked, show 5b. name is shipping_video_hard_dub
+		5b. right col: textarea with label "Hard Dub Shipping/Format" Info and a placeholder that reads "List Name, Company, Address, Phone, How many copies  you require and dub type(s): DVD, Blu Ray, Digi Beta, Beta". name is shipping_video_hard_dub_info
+		6a. left col: show checkbox for "Delivery Information to Follow". when checked, show 6b.
+		6b. right col: show textarea with label "Special Instructions for Shipping". name is shipping_video_hard_dub_info
+		7. show full width alert that reads "For more information call us at 281-240-7400"

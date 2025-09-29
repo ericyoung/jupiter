@@ -359,7 +359,7 @@ ob_start();
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label">Today's Date</label>
-                                        <span id="current_date" class="form-control-plaintext"><?php echo date('Y-m-d'); ?></span>
+                                        <span id="current_date" class="form-control-plaintext"><?php echo date('m/d/Y'); ?></span>
                                     </div>
                                 </div>
                             </div>
@@ -374,7 +374,7 @@ ob_start();
                                         <label for="order_details_audio_order">Audio Order</label>
                                     </div>
                                     <div class="d-flex align-items-center mb-2">
-                                        <div class="custom-checkbox-container me-2">
+                                        <div class="custom-checkbox-container me-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Audio Order must be selected" id="audio_rush_tooltip">
                                             <input class="custom-checkbox-input" type="checkbox" id="order_details_audio_order_rush" name="order_details_audio_order_rush" disabled onchange="updateInvoiceCost()">
                                             <label class="custom-checkbox-label" for="order_details_audio_order_rush"></label>
                                         </div>
@@ -392,7 +392,7 @@ ob_start();
                                         <label for="order_details_video_order">Video Order</label>
                                     </div>
                                     <div class="d-flex align-items-center mb-2">
-                                        <div class="custom-checkbox-container me-2">
+                                        <div class="custom-checkbox-container me-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Video Order must be selected" id="video_rush_tooltip">
                                             <input class="custom-checkbox-input" type="checkbox" id="order_details_video_order_rush" name="order_details_video_order_rush" disabled onchange="updateInvoiceCost()">
                                             <label class="custom-checkbox-label" for="order_details_video_order_rush"></label>
                                         </div>
@@ -915,10 +915,34 @@ ob_start();
     // Toggle rush order checkboxes based on main order selection
     function toggleRushOrder(type, isChecked) {
         let rushCheckbox = document.getElementById(`order_details_${type}_order_rush`);
+        let tooltipElement = document.getElementById(`${type}_rush_tooltip`);
         rushCheckbox.disabled = !isChecked;
         
         if (!isChecked) {
             rushCheckbox.checked = false;
+            // Enable tooltip when main order is not selected
+            if (tooltipElement) {
+                tooltipElement.setAttribute('data-bs-original-title', `${type.charAt(0).toUpperCase() + type.slice(1)} Order must be selected`);
+                // If Bootstrap tooltip is initialized, we need to update it
+                if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+                    let tooltip = bootstrap.Tooltip.getInstance(tooltipElement);
+                    if (tooltip) {
+                        tooltip.enable();
+                    }
+                }
+            }
+        } else {
+            // Disable tooltip when main order is selected
+            if (tooltipElement) {
+                tooltipElement.setAttribute('data-bs-original-title', '');
+                // If Bootstrap tooltip is initialized, we need to update it
+                if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+                    let tooltip = bootstrap.Tooltip.getInstance(tooltipElement);
+                    if (tooltip) {
+                        tooltip.disable();
+                    }
+                }
+            }
         }
         
         updateInvoiceCost();
@@ -1043,11 +1067,25 @@ ob_start();
         if (audioOrderCheckbox) audioOrderCheckbox.addEventListener('change', function() {
             toggleRushOrder('audio', this.checked);
         });
-        if (audioRushCheckbox) audioRushCheckbox.addEventListener('change', updateInvoiceCost);
         if (videoOrderCheckbox) videoOrderCheckbox.addEventListener('change', function() {
             toggleRushOrder('video', this.checked);
         });
-        if (videoRushCheckbox) videoRushCheckbox.addEventListener('change', updateInvoiceCost);
+
+        // Initialize Bootstrap tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl, {
+                trigger: 'hover'
+            });
+        });
+
+        // Initialize tooltips based on current state
+        if (audioOrderCheckbox && audioRushCheckbox) {
+            toggleRushOrder('audio', audioOrderCheckbox.checked);
+        }
+        if (videoOrderCheckbox && videoRushCheckbox) {
+            toggleRushOrder('video', videoOrderCheckbox.checked);
+        }
     });
 
     // Phone number formatting functions
