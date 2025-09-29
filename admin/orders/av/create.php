@@ -283,6 +283,20 @@ ob_start();
                                         <input type="text" class="form-control" id="promoter_name" name="promoter_name" value="<?php echo htmlspecialchars($userInfo['name'] ?? ''); ?>" readonly>
                                     </div>
                                     <div class="mb-3">
+                                        <label for="promoter_company" class="form-label">Promoter Company Name</label>
+                                        <input type="text" class="form-control" id="promoter_company" name="promoter_company" value="<?php echo htmlspecialchars($companyInfo['company_name'] ?? ''); ?>" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="promoter_email" class="form-label">Promoter Email</label>
+                                        <input type="email" class="form-control" id="promoter_email" name="promoter_email" value="<?php echo htmlspecialchars($userInfo['email'] ?? ''); ?>" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
                                         <label for="promoter_phone" class="form-label">Phone Number</label>
                                         <input type="text" class="form-control" id="promoter_phone" name="promoter_phone" value="<?php echo htmlspecialchars($userInfo['phone'] ?? ''); ?>" maxlength="14" oninput="formatPhoneNumberInput('promoter_phone')" onchange="formatPhoneNumber('promoter_phone')">
                                         <div class="form-text">Format: (###) ###-####</div>
@@ -291,6 +305,8 @@ ob_start();
                                         <label for="promoter_phone_ext" class="form-label">Phone Extension</label>
                                         <input type="text" class="form-control" id="promoter_phone_ext" name="promoter_phone_ext" value="<?php echo htmlspecialchars($userInfo['phone_ext'] ?? ''); ?>">
                                     </div>
+                                </div>
+                                <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="promoter_alt_phone" class="form-label">Alternate Phone Number</label>
                                         <input type="text" class="form-control" id="promoter_alt_phone" name="promoter_alt_phone" value="<?php echo htmlspecialchars($userInfo['alt_phone'] ?? ''); ?>" maxlength="14" oninput="formatPhoneNumberInput('promoter_alt_phone')" onchange="formatPhoneNumber('promoter_alt_phone')">
@@ -299,16 +315,6 @@ ob_start();
                                     <div class="mb-3">
                                         <label for="promoter_alt_phone_ext" class="form-label">Alternative Phone Number Extension</label>
                                         <input type="text" class="form-control" id="promoter_alt_phone_ext" name="promoter_alt_phone_ext" value="<?php echo htmlspecialchars($userInfo['alt_phone_ext'] ?? ''); ?>">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="promoter_email" class="form-label">Promoter Email</label>
-                                        <input type="email" class="form-control" id="promoter_email" name="promoter_email" value="<?php echo htmlspecialchars($userInfo['email'] ?? ''); ?>" readonly>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="promoter_company" class="form-label">Promoter Company Name</label>
-                                        <input type="text" class="form-control" id="promoter_company" name="promoter_company" value="<?php echo htmlspecialchars($companyInfo['company_name'] ?? ''); ?>" readonly>
                                     </div>
                                 </div>
                             </div>
@@ -385,6 +391,14 @@ ob_start();
                                     </div>
                                 </div>
                             </div>
+                            
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="alert alert-info text-center">
+                                        NOTE: Orders received after 3:30 PM Central or which require same day turnaround incur rush charges!
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -395,28 +409,38 @@ ob_start();
                         </div>
                         <div class="card-body">
                             <div class="row mb-4">
+                                <div class="col-12 text-center mb-3">
+                                    <button type="button" class="btn btn-primary me-2">New Tour</button>
+                                    <button type="button" class="btn btn-primary me-2">New Market</button>
+                                    <button type="button" class="btn btn-primary">New Venue</button>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-4">
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="event_info_headliner" class="form-label">Tour/Event/Headliner *</label>
-                                        <textarea class="form-control" id="event_info_headliner" name="event_info_headliner" rows="2" required><?php echo htmlspecialchars($tourInfo['headliner'] ?? ''); ?></textarea>
+                                        <textarea class="form-control" id="event_info_headliner" name="event_info_headliner" rows="2" <?php if ($tourId): ?>readonly<?php else: ?>required<?php endif; ?>><?php echo htmlspecialchars($tourInfo['headliner'] ?? ''); ?></textarea>
                                     </div>
                                     <div class="mb-3">
                                         <label for="event_info_support" class="form-label">Support</label>
-                                        <textarea class="form-control" id="event_info_support" name="event_info_support" rows="2"><?php echo htmlspecialchars($tourInfo['support'] ?? ''); ?></textarea>
+                                        <textarea class="form-control" id="event_info_support" name="event_info_support" rows="2" <?php if ($tourId): ?>readonly<?php endif; ?>><?php echo htmlspecialchars($tourInfo['support'] ?? ''); ?></textarea>
                                     </div>
                                     <div class="mb-3">
                                         <label for="event_info_venue" class="form-label">Venue *</label>
                                         <input type="text" class="form-control" id="event_info_venue" name="event_info_venue" placeholder="Start typing to search venues..." autocomplete="off">
                                         <div id="venue_suggestions" class="list-group" style="display: none; position: absolute; z-index: 1000; width: 100%;"></div>
-                                        <div class="form-text">NOTE: we will only say market if it's written in the Venue Section</div>
+                                        <div class="form-check mt-2">
+                                            <input class="form-check-input" type="checkbox" id="event_info_mention_the" name="event_info_mention_the">
+                                            <label class="form-check-label" for="event_info_mention_the">Mention "The" in Venue Name?</label>
+                                        </div>
+                                        <div class="alert alert-info mt-2">
+                                            NOTE: We will only say market if it's written in Venue field above.
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <div class="form-check mb-2">
-                                            <input class="form-check-input" type="checkbox" id="event_info_mention_the" name="event_info_mention_the">
-                                            <label class="form-check-label" for="event_info_mention_the">Mention "The" in Venue Name?</label>
-                                        </div>
                                         <label for="event_info_market" class="form-label">City/Market *</label>
                                         <input type="text" class="form-control" id="event_info_market" name="event_info_market" placeholder="Start typing to search markets..." autocomplete="off">
                                         <div id="market_suggestions" class="list-group" style="display: none; position: absolute; z-index: 1000; width: 100%;"></div>
