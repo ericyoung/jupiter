@@ -115,7 +115,7 @@ ob_start();
 .custom-checkbox-container {
     position: relative;
     display: inline-block;
-    min-width: 40px; /* Fixed width to ensure alignment */
+    min-width: 28px; /* Adjusted for square checkbox */
 }
 
 .custom-checkbox-input {
@@ -130,23 +130,27 @@ ob_start();
 
 .custom-checkbox-label {
     display: inline-block;
-    padding: 4px 10px; /* Smaller padding */
+    padding: 8px; /* Equal padding makes it square */
     background-color: #f8d7da; /* Pleasant red background for unchecked */
     border: 1.5px solid #dc3545; /* Red border for unchecked */
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
     font-weight: 600; /* Bolder font for better visibility */
-    min-width: 30px;
+    min-width: 24px; /* Make it square */
     text-align: center;
     user-select: none;
     position: relative;
     z-index: 1;
-    line-height: 1.2;
+    line-height: 1;
     font-size: 0.9rem; /* Smaller font */
     color: #721c24; /* Dark red text for contrast */
-    width: 100%; /* Make sure all labels have the same width */
+    width: 24px; /* Make it square */
+    height: 24px; /* Make it square */
     box-sizing: border-box; /* Include padding in width calculation */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .custom-checkbox-input:checked + .custom-checkbox-label {
@@ -154,6 +158,24 @@ ob_start();
     border-color: #28a745; /* Green border for checked */
     color: #155724; /* Dark green text for contrast */
     box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+/* Add checkmark using pseudo-element - for all custom checkboxes */
+.custom-checkbox-input:checked + .custom-checkbox-label::after {
+    content: "✓";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #155724;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* Exclude audio/video spot checkboxes from showing checkmarks */
+[id^="spot_info_audio_"]:checked + .custom-checkbox-label::after,
+[id^="spot_info_video_"]:checked + .custom-checkbox-label::after {
+    content: none !important;
 }
 
 .custom-checkbox-input:focus + .custom-checkbox-label {
@@ -344,25 +366,37 @@ ob_start();
 
                             <div class="row mb-3">
                                 <div class="col-md-6">
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input" type="checkbox" id="order_details_audio_order" name="order_details_audio_order" onchange="toggleRushOrder('audio', this.checked)">
-                                        <label class="form-check-label" for="order_details_audio_order">Audio Order</label>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="custom-checkbox-container me-2">
+                                            <input class="custom-checkbox-input" type="checkbox" id="order_details_audio_order" name="order_details_audio_order" onchange="toggleRushOrder('audio', this.checked)">
+                                            <label class="custom-checkbox-label" for="order_details_audio_order"></label>
+                                        </div>
+                                        <label for="order_details_audio_order">Audio Order</label>
                                     </div>
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input" type="checkbox" id="order_details_audio_order_rush" name="order_details_audio_order_rush" disabled onchange="updateInvoiceCost()">
-                                        <label class="form-check-label text-danger" for="order_details_audio_order_rush">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="custom-checkbox-container me-2">
+                                            <input class="custom-checkbox-input" type="checkbox" id="order_details_audio_order_rush" name="order_details_audio_order_rush" disabled onchange="updateInvoiceCost()">
+                                            <label class="custom-checkbox-label" for="order_details_audio_order_rush"></label>
+                                        </div>
+                                        <label class="text-danger" for="order_details_audio_order_rush">
                                             RUSH ORDER ($<span id="audio_rush_amount"><?php echo $settings['audio_rush_order']; ?></span>)
                                         </label>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input" type="checkbox" id="order_details_video_order" name="order_details_video_order" onchange="toggleRushOrder('video', this.checked)">
-                                        <label class="form-check-label" for="order_details_video_order">Video Order</label>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="custom-checkbox-container me-2">
+                                            <input class="custom-checkbox-input" type="checkbox" id="order_details_video_order" name="order_details_video_order" onchange="toggleRushOrder('video', this.checked)">
+                                            <label class="custom-checkbox-label" for="order_details_video_order"></label>
+                                        </div>
+                                        <label for="order_details_video_order">Video Order</label>
                                     </div>
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input" type="checkbox" id="order_details_video_order_rush" name="order_details_video_order_rush" disabled onchange="updateInvoiceCost()">
-                                        <label class="form-check-label text-danger" for="order_details_video_order_rush">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="custom-checkbox-container me-2">
+                                            <input class="custom-checkbox-input" type="checkbox" id="order_details_video_order_rush" name="order_details_video_order_rush" disabled onchange="updateInvoiceCost()">
+                                            <label class="custom-checkbox-label" for="order_details_video_order_rush"></label>
+                                        </div>
+                                        <label class="text-danger" for="order_details_video_order_rush">
                                             RUSH ORDER ($<span id="video_rush_amount"><?php echo $settings['video_rush_order']; ?></span>)
                                         </label>
                                     </div>
@@ -375,9 +409,12 @@ ob_start();
                                         <label for="order_details_audio_received_by" class="form-label">Audio must be received by</label>
                                         <input type="date" class="form-control" id="order_details_audio_received_by" name="order_details_audio_received_by">
                                     </div>
-                                    <div class="form-check mb-3">
-                                        <input class="form-check-input" type="checkbox" id="order_details_audio_order_requires_approval" name="order_details_audio_order_requires_approval">
-                                        <label class="form-check-label" for="order_details_audio_order_requires_approval">Do not ship audio spots without approval</label>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="custom-checkbox-container me-2">
+                                            <input class="custom-checkbox-input" type="checkbox" id="order_details_audio_order_requires_approval" name="order_details_audio_order_requires_approval">
+                                            <label class="custom-checkbox-label" for="order_details_audio_order_requires_approval"></label>
+                                        </div>
+                                        <label for="order_details_audio_order_requires_approval">Do not ship audio spots without approval</label>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -385,9 +422,12 @@ ob_start();
                                         <label for="order_details_video_order_received_by" class="form-label">Video must be received by</label>
                                         <input type="date" class="form-control" id="order_details_video_order_received_by" name="order_details_video_order_received_by">
                                     </div>
-                                    <div class="form-check mb-3">
-                                        <input class="form-check-input" type="checkbox" id="order_details_video_order_requires_approval" name="order_details_video_order_requires_approval">
-                                        <label class="form-check-label" for="order_details_video_order_requires_approval">Do not ship video spots without approval</label>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="custom-checkbox-container me-2">
+                                            <input class="custom-checkbox-input" type="checkbox" id="order_details_video_order_requires_approval" name="order_details_video_order_requires_approval">
+                                            <label class="custom-checkbox-label" for="order_details_video_order_requires_approval"></label>
+                                        </div>
+                                        <label for="order_details_video_order_requires_approval">Do not ship video spots without approval</label>
                                     </div>
                                 </div>
                             </div>
@@ -430,9 +470,12 @@ ob_start();
                                         <label for="event_info_venue" class="form-label">Venue *</label>
                                         <input type="text" class="form-control" id="event_info_venue" name="event_info_venue" placeholder="Start typing to search venues..." autocomplete="off">
                                         <div id="venue_suggestions" class="list-group" style="display: none; position: absolute; z-index: 1000; width: 100%;"></div>
-                                        <div class="form-check mt-2">
-                                            <input class="form-check-input" type="checkbox" id="event_info_mention_the" name="event_info_mention_the">
-                                            <label class="form-check-label" for="event_info_mention_the">Mention "The" in Venue Name?</label>
+                                        <div class="d-flex align-items-center mt-2">
+                                            <div class="custom-checkbox-container me-2">
+                                                <input class="custom-checkbox-input" type="checkbox" id="event_info_mention_the" name="event_info_mention_the">
+                                                <label class="custom-checkbox-label" for="event_info_mention_the"></label>
+                                            </div>
+                                            <label for="event_info_mention_the">Mention "The" in Venue Name?</label>
                                         </div>
                                         <div class="alert alert-info mt-2">
                                             NOTE: We will only say market if it's written in Venue field above.
@@ -481,24 +524,36 @@ ob_start();
                             <h4>Local Copy</h4>
                         </div>
                         <div class="card-body">
-                            <div class="row mb-4">
+                            <div class="mb-3">
+                                <label for="local_copy_intro_line" class="form-label">Intro Line</label>
+                                <textarea class="form-control" id="local_copy_intro_line" name="local_copy_intro_line" rows="3"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="local_copy_outro_line" class="form-label">Outro Line</label>
+                                <textarea class="form-control" id="local_copy_outro_line" name="local_copy_outro_line" rows="3"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="local_copy_produced_by" class="form-label">Produced By</label>
+                                <textarea class="form-control" id="local_copy_produced_by" name="local_copy_produced_by" rows="3"></textarea>
+                            </div>
+                            <div class="alert alert-info">
+                                NOTE: Please type out exactly how you want your station mentioned. If you include a "." (Point) in the station ID, the word "Point" will be said.
+                            </div>
+                            
+                            <div class="row mb-3">
                                 <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="local_copy_intro_line" class="form-label">Intro Line</label>
-                                        <textarea class="form-control" id="local_copy_intro_line" name="local_copy_intro_line" rows="2"><?php echo htmlspecialchars($tourInfo['intro_line'] ?? ''); ?></textarea>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="local_copy_produced_by" class="form-label">Produced By</label>
-                                        <textarea class="form-control" id="local_copy_produced_by" name="local_copy_produced_by" rows="2"><?php echo htmlspecialchars($tourInfo['produced_by'] ?? ''); ?></textarea>
-                                    </div>
+                                    <label for="local_copy_audio_ids" class="form-label">Audio ID(s)</label>
+                                    <textarea class="form-control" id="local_copy_audio_ids" name="local_copy_audio_ids" rows="3"></textarea>
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="local_copy_outro_line" class="form-label">Outro Line</label>
-                                        <textarea class="form-control" id="local_copy_outro_line" name="local_copy_outro_line" rows="2"><?php echo htmlspecialchars($tourInfo['outro_line'] ?? ''); ?></textarea>
-                                    </div>
-                                    <div class="form-text mb-2">NOTE: Please type out exactly how you want your station mentioned. If you include a "." (Point) in the station ID, the word "Point" will be said.</div>
+                                    <label for="local_copy_video_ids" class="form-label">Video ID(s)</label>
+                                    <textarea class="form-control" id="local_copy_video_ids" name="local_copy_video_ids" rows="3"></textarea>
                                 </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="local_copy_logos_required" class="form-label">List all logos required (send to AE)</label>
+                                <input type="text" class="form-control" id="local_copy_logos_required" name="local_copy_logos_required">
                             </div>
                         </div>
                     </div>
@@ -516,17 +571,31 @@ ob_start();
                                         <input type="text" class="form-control" id="ticket_info_on_sale_day_time" name="ticket_info_on_sale_day_time" placeholder="Only list date if required">
                                         <div class="form-text">Only list date if required. Otherwise, only date and time will be mentioned in pre-sale spot.</div>
                                     </div>
-                                    <div class="form-check mb-3">
-                                        <input class="form-check-input" type="checkbox" id="ticket_info_mention_reserved_seats" name="ticket_info_mention_reserved_seats">
-                                        <label class="form-check-label" for="ticket_info_mention_reserved_seats">Mention Reserved Seats</label>
-                                    </div>
                                 </div>
                                 <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">&nbsp;</label> <!-- Space to align with the field above -->
+                                        <div class="d-flex align-items-center">
+                                            <div class="custom-checkbox-container">
+                                                <input class="custom-checkbox-input" type="checkbox" id="ticket_info_mention_reserved_seats" name="ticket_info_mention_reserved_seats">
+                                                <label class="custom-checkbox-label" for="ticket_info_mention_reserved_seats"></label>
+                                            </div>
+                                            <label class="ms-2" for="ticket_info_mention_reserved_seats">Mention Reserved Seats</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info mb-3">
+                                NOTE: :30, :15, :10 spots have limited time for ticket information
+                            </div>
+                            
+                            <div class="row mb-4">
+                                <div class="col-12">
                                     <div class="mb-3">
                                         <label for="ticket_info_locations" class="form-label">Ticket Information/Locations</label>
                                         <textarea class="form-control" id="ticket_info_locations" name="ticket_info_locations" rows="3"></textarea>
                                     </div>
-                                    <div class="form-text">NOTE: :30, :15, :10 spots have limited time for ticket information</div>
                                 </div>
                             </div>
                         </div>
