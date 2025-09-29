@@ -881,6 +881,235 @@ ob_start();
                         </div>
                     </div>
 
+                    <!-- Shipping -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h4>Shipping</h4>
+                        </div>
+                        <div class="card-body">
+                            <!-- Audio Delivery Options -->
+                            <h5 class="mb-3">AUDIO DELIVERY</h5>
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <p class="mb-0">All Audio sent via PDQ for client to distribute</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="shipping_audio_email" class="form-label">Promoter Email</label>
+                                        <textarea class="form-control" id="shipping_audio_email" name="shipping_audio_email" rows="2"><?php echo htmlspecialchars($userInfo['email'] ?? ''); ?></textarea>
+                                        <div class="form-text">Additional Email Addresses can be added.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info mb-4">
+                                <h5 class="alert-heading">All cuts ordered will be delivered via your chosen delivery method unless otherwise stated in special instructions.</h5>
+                            </div>
+                            
+                            <!-- Video Delivery Options -->
+                            <h5 class="mb-3">VIDEO DELIVERY OPTIONS</h5>
+                            
+                            <!-- Comcast Ad Delivery -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="custom-checkbox-container me-2">
+                                            <input class="custom-checkbox-input" type="checkbox" id="shipping_video_comcast_ad_delivery" name="shipping_video_comcast_ad_delivery">
+                                            <label class="custom-checkbox-label" for="shipping_video_comcast_ad_delivery"></label>
+                                        </div>
+                                        <label for="shipping_video_comcast_ad_delivery">Comcast Ad Delivery</label>
+                                    </div>
+                                    <div class="ms-4" id="comcast_ad_delivery_suboptions" style="display: none;">
+                                        <div class="d-flex align-items-center mb-1">
+                                            <div class="custom-checkbox-container me-2">
+                                                <input class="custom-checkbox-input" type="checkbox" id="shipping_video_comcast_ad_delivery_hd" name="shipping_video_comcast_ad_delivery_hd">
+                                                <label class="custom-checkbox-label" for="shipping_video_comcast_ad_delivery_hd"></label>
+                                            </div>
+                                            <label for="shipping_video_comcast_ad_delivery_hd">HD Delivery</label>
+                                        </div>
+                                        <div class="d-flex align-items-center mb-1">
+                                            <div class="custom-checkbox-container me-2">
+                                                <input class="custom-checkbox-input" type="checkbox" id="shipping_video_comcast_ad_delivery_sd" name="shipping_video_comcast_ad_delivery_sd">
+                                                <label class="custom-checkbox-label" for="shipping_video_comcast_ad_delivery_sd"></label>
+                                            </div>
+                                            <label for="shipping_video_comcast_ad_delivery_sd">SD Delivery</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <!-- Right column stays empty for now, details will be shown in separate rows -->
+                                </div>
+                            </div>
+                            
+                            <!-- HD/SD Delivery Details -->
+                            <div class="row mb-3" id="hd_delivery_details" style="display: none;">
+                                <div class="col-md-6">
+                                    <!-- Empty column for spacing -->
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="shipping_video_comcast_ad_delivery_hd_station" class="form-label" id="shipping_video_comcast_ad_delivery_hd_station_label">Station</label>
+                                        <input type="text" class="form-control" id="shipping_video_comcast_ad_delivery_hd_station" name="shipping_video_comcast_ad_delivery_hd_station">
+                                        <div class="form-text">Please enter call letters for broadcast stations and SYS Code for cable stations.</div>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="shipping_video_comcast_ad_delivery_hd_standard_overnight" name="shipping_video_comcast_ad_delivery_hd_standard_overnight">
+                                        <label class="form-check-label" for="shipping_video_comcast_ad_delivery_hd_standard_overnight">Standard overnight : $85 per cut per station</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="shipping_video_comcast_ad_delivery_hd_one_hour_cut" name="shipping_video_comcast_ad_delivery_hd_one_hour_cut">
+                                        <label class="form-check-label" for="shipping_video_comcast_ad_delivery_hd_one_hour_cut">1 hour $150 per cut per station</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="shipping_video_comcast_ad_delivery_hd_closed_caption" name="shipping_video_comcast_ad_delivery_hd_closed_caption">
+                                        <label class="form-check-label" for="shipping_video_comcast_ad_delivery_hd_closed_caption">Closed Caption $150 per cut</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3" id="sd_delivery_details" style="display: none;">
+                                <div class="col-md-6">
+                                    <!-- Empty column for spacing -->
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="shipping_video_comcast_ad_delivery_sd_station" class="form-label" id="shipping_video_comcast_ad_delivery_sd_station_label">Station</label>
+                                        <input type="text" class="form-control" id="shipping_video_comcast_ad_delivery_sd_station" name="shipping_video_comcast_ad_delivery_sd_station">
+                                        <div class="form-text">Please enter call letters for broadcast stations and SYS Code for cable stations.</div>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="shipping_video_comcast_ad_delivery_sd_standard_overnight" name="shipping_video_comcast_ad_delivery_sd_standard_overnight">
+                                        <label class="form-check-label" for="shipping_video_comcast_ad_delivery_sd_standard_overnight">Standard overnight : $85 per cut per station</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="shipping_video_comcast_ad_delivery_sd_one_hour_cut" name="shipping_video_comcast_ad_delivery_sd_one_hour_cut">
+                                        <label class="form-check-label" for="shipping_video_comcast_ad_delivery_sd_one_hour_cut">1 hour $150 per cut per station</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="shipping_video_comcast_ad_delivery_sd_closed_caption" name="shipping_video_comcast_ad_delivery_sd_closed_caption">
+                                        <label class="form-check-label" for="shipping_video_comcast_ad_delivery_sd_closed_caption">Closed Caption $150 per cut</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Broadcast Link -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="custom-checkbox-container me-2">
+                                            <input class="custom-checkbox-input" type="checkbox" id="shipping_video_broadcast_link" name="shipping_video_broadcast_link">
+                                            <label class="custom-checkbox-label" for="shipping_video_broadcast_link"></label>
+                                        </div>
+                                        <label for="shipping_video_broadcast_link">Broadcast Link</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6" id="broadcast_link_details" style="display: none;">
+                                    <div class="mb-3">
+                                        <label for="shipping_video_broadcast_link_email" class="form-label">Cost $250 for first 2 cuts / $75 per cut after<br>Email address to receive link</label>
+                                        <input type="text" class="form-control" id="shipping_video_broadcast_link_email" name="shipping_video_broadcast_link_email">
+                                        <div class="form-text">BYP Broadcast link file specs .mov 1920 x 1080 H.264. If another file type is needed other than above please enter below.</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="shipping_video_broadcast_link_custom_file_spec" class="form-label">Custom File Specification</label>
+                                        <input type="text" class="form-control" id="shipping_video_broadcast_link_custom_file_spec" name="shipping_video_broadcast_link_custom_file_spec">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Web Dub -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="custom-checkbox-container me-2">
+                                            <input class="custom-checkbox-input" type="checkbox" id="shipping_video_web_dub" name="shipping_video_web_dub">
+                                            <label class="custom-checkbox-label" for="shipping_video_web_dub"></label>
+                                        </div>
+                                        <label for="shipping_video_web_dub">Web Dub</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6" id="web_dub_details" style="display: none;">
+                                    <div class="mb-3">
+                                        <label for="shipping_video_web_dub_email" class="form-label">Cost $125 for first cut / $75 per cut after<br>Email address to receive link</label>
+                                        <input type="text" class="form-control" id="shipping_video_web_dub_email" name="shipping_video_web_dub_email">
+                                        <div class="form-text">BYP web dub file specs .mp4 1080 h.264 rate 4–5mbps. If another file type is needed other than above please enter below.</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="shipping_video_web_dub_custom_file_spec" class="form-label">Custom File Specification</label>
+                                        <input type="text" class="form-control" id="shipping_video_web_dub_custom_file_spec" name="shipping_video_web_dub_custom_file_spec">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Venue Files -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="custom-checkbox-container me-2">
+                                            <input class="custom-checkbox-input" type="checkbox" id="shipping_video_venue_files" name="shipping_video_venue_files">
+                                            <label class="custom-checkbox-label" for="shipping_video_venue_files"></label>
+                                        </div>
+                                        <label for="shipping_video_venue_files">Venue Files</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6" id="venue_files_details" style="display: none;">
+                                    <div class="mb-3">
+                                        <label for="shipping_video_venue_files_email" class="form-label">Cost $150 for first cut / $75 per cut after<br>Email address to receive link for venue distribution</label>
+                                        <input type="text" class="form-control" id="shipping_video_venue_files_email" name="shipping_video_venue_files_email">
+                                        <div class="form-text">BYP venue file specs .mov 1920 x 1080 H.264. If another file type is needed other than above please enter below.</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="shipping_video_venue_files_custom_file_spec" class="form-label">Custom File Specification</label>
+                                        <input type="text" class="form-control" id="shipping_video_venue_files_custom_file_spec" name="shipping_video_venue_files_custom_file_spec">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Hard Dub -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="custom-checkbox-container me-2">
+                                            <input class="custom-checkbox-input" type="checkbox" id="shipping_video_hard_dub" name="shipping_video_hard_dub">
+                                            <label class="custom-checkbox-label" for="shipping_video_hard_dub"></label>
+                                        </div>
+                                        <label for="shipping_video_hard_dub">Hard Dub</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6" id="hard_dub_details" style="display: none;">
+                                    <div class="mb-3">
+                                        <label for="shipping_video_hard_dub_info" class="form-label">Hard Dub Shipping/Format Info</label>
+                                        <textarea class="form-control" id="shipping_video_hard_dub_info" name="shipping_video_hard_dub_info" rows="3" placeholder="List Name, Company, Address, Phone, How many copies you require and dub type(s): DVD, Blu Ray, Digi Beta, Beta"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Delivery Information to Follow -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="custom-checkbox-container me-2">
+                                            <input class="custom-checkbox-input" type="checkbox" id="shipping_video_delivery_info_follow" name="shipping_video_delivery_info_follow">
+                                            <label class="custom-checkbox-label" for="shipping_video_delivery_info_follow"></label>
+                                        </div>
+                                        <label for="shipping_video_delivery_info_follow">Delivery Information to Follow</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6" id="delivery_info_details" style="display: none;">
+                                    <div class="mb-3">
+                                        <label for="shipping_video_special_instructions" class="form-label">Special Instructions for Shipping</label>
+                                        <textarea class="form-control" id="shipping_video_special_instructions" name="shipping_video_special_instructions" rows="3"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <h5 class="alert-heading">For more information call us at 281-240-7400</h5>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Invoice Cost Display -->
                     <div class="row mt-4">
                         <div class="col-12">
@@ -1053,8 +1282,133 @@ ob_start();
         console.log('Loading tour info');
     }
 
-    // Update invoice cost when rush order checkboxes change
+    // Handle dynamic showing/hiding of shipping options
     document.addEventListener('DOMContentLoaded', function() {
+        // Comcast Ad Delivery
+        const comcastCheckbox = document.getElementById('shipping_video_comcast_ad_delivery');
+        if (comcastCheckbox) {
+            comcastCheckbox.addEventListener('change', function() {
+                const suboptions = document.getElementById('comcast_ad_delivery_suboptions');
+                if (suboptions) {
+                    suboptions.style.display = this.checked ? 'block' : 'none';
+                }
+                // Also handle HD/SD details visibility
+                const hdDetails = document.getElementById('hd_delivery_details');
+                const sdDetails = document.getElementById('sd_delivery_details');
+                const hdCheckbox = document.getElementById('shipping_video_comcast_ad_delivery_hd');
+                const sdCheckbox = document.getElementById('shipping_video_comcast_ad_delivery_sd');
+                if (hdDetails && hdCheckbox) {
+                    hdDetails.style.display = (this.checked && hdCheckbox.checked) ? 'flex' : 'none';
+                    // Update Station label if HD is checked
+                    if (this.checked && hdCheckbox.checked) {
+                        const hdStationLabel = document.getElementById('shipping_video_comcast_ad_delivery_hd_station_label');
+                        if (hdStationLabel) {
+                            hdStationLabel.textContent = 'Station (HD Delivery)';
+                        }
+                    }
+                }
+                if (sdDetails && sdCheckbox) {
+                    sdDetails.style.display = (this.checked && sdCheckbox.checked) ? 'flex' : 'none';
+                    // Update Station label if SD is checked
+                    if (this.checked && sdCheckbox.checked) {
+                        const sdStationLabel = document.getElementById('shipping_video_comcast_ad_delivery_sd_station_label');
+                        if (sdStationLabel) {
+                            sdStationLabel.textContent = 'Station (SD Delivery)';
+                        }
+                    }
+                }
+            });
+        }
+
+        // HD Delivery
+        const hdCheckbox = document.getElementById('shipping_video_comcast_ad_delivery_hd');
+        if (hdCheckbox) {
+            hdCheckbox.addEventListener('change', function() {
+                const hdDetails = document.getElementById('hd_delivery_details');
+                const comcastCheckbox = document.getElementById('shipping_video_comcast_ad_delivery');
+                if (hdDetails && comcastCheckbox) {
+                    hdDetails.style.display = (comcastCheckbox.checked && this.checked) ? 'flex' : 'none';
+                    // Update Station label when HD checkbox changes
+                    const hdStationLabel = document.getElementById('shipping_video_comcast_ad_delivery_hd_station_label');
+                    if (hdStationLabel) {
+                        hdStationLabel.textContent = this.checked ? 'Station (HD Delivery)' : 'Station';
+                    }
+                }
+            });
+        }
+
+        // SD Delivery
+        const sdCheckbox = document.getElementById('shipping_video_comcast_ad_delivery_sd');
+        if (sdCheckbox) {
+            sdCheckbox.addEventListener('change', function() {
+                const sdDetails = document.getElementById('sd_delivery_details');
+                const comcastCheckbox = document.getElementById('shipping_video_comcast_ad_delivery');
+                if (sdDetails && comcastCheckbox) {
+                    sdDetails.style.display = (comcastCheckbox.checked && this.checked) ? 'flex' : 'none';
+                    // Update Station label when SD checkbox changes
+                    const sdStationLabel = document.getElementById('shipping_video_comcast_ad_delivery_sd_station_label');
+                    if (sdStationLabel) {
+                        sdStationLabel.textContent = this.checked ? 'Station (SD Delivery)' : 'Station';
+                    }
+                }
+            });
+        }
+
+        // Broadcast Link
+        const broadcastLinkCheckbox = document.getElementById('shipping_video_broadcast_link');
+        if (broadcastLinkCheckbox) {
+            broadcastLinkCheckbox.addEventListener('change', function() {
+                const details = document.getElementById('broadcast_link_details');
+                if (details) {
+                    details.style.display = this.checked ? 'block' : 'none';
+                }
+            });
+        }
+
+        // Web Dub
+        const webDubCheckbox = document.getElementById('shipping_video_web_dub');
+        if (webDubCheckbox) {
+            webDubCheckbox.addEventListener('change', function() {
+                const details = document.getElementById('web_dub_details');
+                if (details) {
+                    details.style.display = this.checked ? 'block' : 'none';
+                }
+            });
+        }
+
+        // Venue Files
+        const venueFilesCheckbox = document.getElementById('shipping_video_venue_files');
+        if (venueFilesCheckbox) {
+            venueFilesCheckbox.addEventListener('change', function() {
+                const details = document.getElementById('venue_files_details');
+                if (details) {
+                    details.style.display = this.checked ? 'block' : 'none';
+                }
+            });
+        }
+
+        // Hard Dub
+        const hardDubCheckbox = document.getElementById('shipping_video_hard_dub');
+        if (hardDubCheckbox) {
+            hardDubCheckbox.addEventListener('change', function() {
+                const details = document.getElementById('hard_dub_details');
+                if (details) {
+                    details.style.display = this.checked ? 'block' : 'none';
+                }
+            });
+        }
+
+        // Delivery Information to Follow
+        const deliveryInfoCheckbox = document.getElementById('shipping_video_delivery_info_follow');
+        if (deliveryInfoCheckbox) {
+            deliveryInfoCheckbox.addEventListener('change', function() {
+                const details = document.getElementById('delivery_info_details');
+                if (details) {
+                    details.style.display = this.checked ? 'block' : 'none';
+                }
+            });
+        }
+
         // Set initial invoice cost display
         updateInvoiceCost();
 
@@ -1071,20 +1425,18 @@ ob_start();
             toggleRushOrder('video', this.checked);
         });
 
-        // Initialize Bootstrap tooltips
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl, {
-                trigger: 'hover'
-            });
-        });
-
         // Initialize tooltips based on current state
         if (audioOrderCheckbox && audioRushCheckbox) {
-            toggleRushOrder('audio', audioOrderCheckbox.checked);
+            const audioTooltip = document.getElementById('audio_rush_tooltip');
+            if (audioTooltip) {
+                audioTooltip.style.display = audioOrderCheckbox.checked ? 'none' : 'block';
+            }
         }
         if (videoOrderCheckbox && videoRushCheckbox) {
-            toggleRushOrder('video', videoOrderCheckbox.checked);
+            const videoTooltip = document.getElementById('video_rush_tooltip');
+            if (videoTooltip) {
+                videoTooltip.style.display = videoOrderCheckbox.checked ? 'none' : 'block';
+            }
         }
     });
 
